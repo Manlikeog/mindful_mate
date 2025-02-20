@@ -65,46 +65,76 @@ class TrendChart extends ConsumerWidget {
     final currentWeekStart = ref.watch(currentDisplayedWeekProvider);
 
     final filteredData = _filterData(moodData, currentWeekStart, viewMode);
+    final dateRangeText = _getDateRangeText(currentWeekStart, viewMode);
 
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Container(
-        height: 200,
-        padding: const EdgeInsets.all(16),
-        child: LineChart(
-          LineChartData(
-            lineBarsData: [_createChartData(filteredData)],
-            titlesData: FlTitlesData(
-              topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-                axisNameWidget: Text('Mood Trend'),
-              ),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: (value, meta) {
-                    final date =
-                        DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                    return Text(
-                      viewMode == CalendarViewMode.weekly
-                          ? _getDayLabel(date.weekday)
-                          : date.day.toString(),
-                      style: const TextStyle(fontSize: 12),
-                    );
-                  },
-                  reservedSize: 30,
-                  interval: viewMode == CalendarViewMode.weekly
-                      ? 86400000
-                      : null, // Force daily labels
+    return Column(
+      children: [
+        Card(
+            margin: const EdgeInsets.all(16),
+            child: Container(
+              height: 200,
+              padding: const EdgeInsets.all(16),
+              child: LineChart(
+                LineChartData(
+                  lineBarsData: [_createChartData(filteredData)],
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                      axisNameWidget: Text('Mood Trend'),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          return Text(
+                            ['😢', '😐', '😊', '😄', '🌟'][index],
+                            style: const TextStyle(fontSize: 16),
+                          );
+                        },
+                        interval: 1,
+                        reservedSize: 40,
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          final date = DateTime.fromMillisecondsSinceEpoch(
+                              value.toInt());
+                          return Text(
+                            viewMode == CalendarViewMode.weekly
+                                ? _getDayLabel(date.weekday)
+                                : date.day.toString(),
+                            style: const TextStyle(fontSize: 12),
+                          );
+                        },
+                        reservedSize: 30,
+                        interval: viewMode == CalendarViewMode.weekly
+                            ? 86400000
+                            : null,
+                      ),
+                    ),
+                  ),
+                  minX: _getMinX(currentWeekStart, viewMode),
+                  maxX: _getMaxX(currentWeekStart, viewMode),
+                  minY: 0,
+                  maxY: 4,
+                  borderData: FlBorderData(show: false),
                 ),
               ),
-            ),
-            minX: _getMinX(currentWeekStart, viewMode),
-            maxX: _getMaxX(currentWeekStart, viewMode),
-            borderData: FlBorderData(show: false),
+            )),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Text(
+            dateRangeText,
+            style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500),
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -177,6 +207,34 @@ class TrendChart extends ConsumerWidget {
   String _getDayLabel(int weekday) {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return days[weekday % 7];
+  }
+
+  String _getDateRangeText(DateTime baseDate, CalendarViewMode viewMode) {
+    if (viewMode == CalendarViewMode.weekly) {
+      final start = baseDate.subtract(Duration(days: baseDate.weekday % 7));
+      final end = start.add(const Duration(days: 6));
+      return '${_monthAbbreviation(start.month)} ${start.day} - '
+          '${_monthAbbreviation(end.month)} ${end.day} ${end.year}';
+    } else {
+      return '${_monthAbbreviation(baseDate.month)} ${baseDate.year}';
+    }
+  }
+
+  String _monthAbbreviation(int month) {
+    return [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ][month - 1];
   }
 }
 

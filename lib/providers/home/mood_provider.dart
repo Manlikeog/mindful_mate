@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class MoodNotifier extends StateNotifier<Map<DateTime, int>> {
   MoodNotifier() : super({});
 
-  void logMood(int index) {
+  void logMood(int index, DateTime datetime) {
     state = {
       ...state,
-      DateTime.now(): index
+      datetime : index
     };
     HapticFeedback.lightImpact();
   }

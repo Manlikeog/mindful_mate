@@ -75,7 +75,7 @@ class MoodCalendar extends ConsumerWidget {
               5,
               (index) => GestureDetector(
                     onTap: () {
-                      ref.read(moodProvider.notifier).logMood(index);
+                      ref.read(moodProvider.notifier).logMood(index, day);
                       ref.read(selectedDateProvider.notifier).state = day;
                       Navigator.pop(context);
                     },

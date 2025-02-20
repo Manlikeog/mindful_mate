@@ -72,6 +72,20 @@ class _TrendChart extends ConsumerWidget {
                 sideTitles: SideTitles(showTitles: false),
                 axisNameWidget: Text('Mood Trend'),
               ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) {
+                    return Text(
+                      viewMode == CalendarViewMode.weekly
+                          ? _getDayLabel(value)
+                          : value.toInt().toString(),
+                      style: TextStyle(fontSize: 12),
+                    );
+                  },
+                  reservedSize: 30,
+                ),
+              ),
             ),
             borderData: FlBorderData(show: false),
           ),
@@ -83,7 +97,12 @@ class _TrendChart extends ConsumerWidget {
   LineChartBarData _createChartData(
       Map<DateTime, int> moods, CalendarViewMode viewMode) {
     final List<FlSpot> spots = moods.entries
-        .map((e) => FlSpot(e.key.month.toDouble(), e.value.toDouble()))
+        .map((e) => FlSpot(
+              viewMode == CalendarViewMode.weekly
+                  ? (e.key.weekday - 1).toDouble() // 0-6 for Mon-Sun
+                  : e.key.day.toDouble(), // 1-31 for monthly view
+              e.value.toDouble(),
+            ))
         .toList()
       ..sort((a, b) => a.x.compareTo(b.x));
 
@@ -94,6 +113,13 @@ class _TrendChart extends ConsumerWidget {
       barWidth: 2,
       dotData: FlDotData(show: false),
     );
+  }
+
+  String _getDayLabel(double value) {
+    // Convert 0-6 to day abbreviations
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final index = value.toInt();
+    return index >= 0 && index < 7 ? days[index] : '';
   }
 }
 

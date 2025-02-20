@@ -128,7 +128,7 @@ class HomeScreen extends ConsumerWidget {
             itemCount: emojis.length,
             separatorBuilder: (_, __) => SizedBox(width: 12),
             itemBuilder: (ctx, index) => GestureDetector(
-              onTap: () => ref.read(moodProvider.notifier).logMood(index),
+              onTap: () => ref.read(moodProvider.notifier).logMood(index, DateTime.now()),
               child: AnimatedScale(
                 scale: selectedMood == index ? 1.2 : 1.0,
                 duration: Duration(milliseconds: 200),

@@ -1,7 +1,6 @@
-// mood_tracker_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fl_chart/fl_chart.dart'; // Replace charts_flutter import
+import 'package:fl_chart/fl_chart.dart';
 import 'package:mindful_mate/providers/home/mood_provider.dart';
 import 'package:mindful_mate/providers/mood_tracker_provider.dart';
 import 'package:mindful_mate/screens/mood/model/mood_calendar.dart';
@@ -12,20 +11,21 @@ class MoodTrackerScreen extends ConsumerWidget {
   static const String pathName = '/moodTracker';
 
   const MoodTrackerScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mood History'),
-        actions: [
+        title: const Text('Mood History'),
+        actions: const [
           _ViewModeToggle(),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            MoodCalendar(),
-            _TrendChart(),
+            const MoodCalendar(),
+            const TrendChart(),
             _InsightsCard(ref),
           ],
         ),
@@ -35,11 +35,13 @@ class MoodTrackerScreen extends ConsumerWidget {
 }
 
 class _ViewModeToggle extends ConsumerWidget {
+  const _ViewModeToggle();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewMode = ref.watch(calendarViewProvider);
     return Padding(
-      padding: EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.only(right: 16),
       child: ToggleButtons(
         isSelected: [
           viewMode == CalendarViewMode.weekly,
@@ -47,28 +49,33 @@ class _ViewModeToggle extends ConsumerWidget {
         ],
         onPressed: (index) => ref.read(calendarViewProvider.notifier).state =
             index == 0 ? CalendarViewMode.weekly : CalendarViewMode.monthly,
-        children: [Text('Week'), Text('Month')],
+        children: const [Text('Week'), Text('Month')],
       ),
     );
   }
 }
 
-class _TrendChart extends ConsumerWidget {
+class TrendChart extends ConsumerWidget {
+  const TrendChart({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final moodData = ref.watch(moodProvider);
     final viewMode = ref.watch(calendarViewProvider);
+    final currentWeekStart = ref.watch(currentDisplayedWeekProvider);
+
+    final filteredData = _filterData(moodData, currentWeekStart, viewMode);
 
     return Card(
-      margin: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
       child: Container(
         height: 200,
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: LineChart(
           LineChartData(
-            lineBarsData: [_createChartData(moodData, viewMode)],
+            lineBarsData: [_createChartData(filteredData)],
             titlesData: FlTitlesData(
-              topTitles: AxisTitles(
+              topTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
                 axisNameWidget: Text('Mood Trend'),
               ),
@@ -76,17 +83,24 @@ class _TrendChart extends ConsumerWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   getTitlesWidget: (value, meta) {
+                    final date =
+                        DateTime.fromMillisecondsSinceEpoch(value.toInt());
                     return Text(
                       viewMode == CalendarViewMode.weekly
-                          ? _getDayLabel(value)
-                          : value.toInt().toString(),
-                      style: TextStyle(fontSize: 12),
+                          ? _getDayLabel(date.weekday)
+                          : date.day.toString(),
+                      style: const TextStyle(fontSize: 12),
                     );
                   },
                   reservedSize: 30,
+                  interval: viewMode == CalendarViewMode.weekly
+                      ? 86400000
+                      : null, // Force daily labels
                 ),
               ),
             ),
+            minX: _getMinX(currentWeekStart, viewMode),
+            maxX: _getMaxX(currentWeekStart, viewMode),
             borderData: FlBorderData(show: false),
           ),
         ),
@@ -94,13 +108,35 @@ class _TrendChart extends ConsumerWidget {
     );
   }
 
-  LineChartBarData _createChartData(
-      Map<DateTime, int> moods, CalendarViewMode viewMode) {
-    final List<FlSpot> spots = moods.entries
+  Map<DateTime, int> _filterData(
+    Map<DateTime, int> moods,
+    DateTime baseDate,
+    CalendarViewMode viewMode,
+  ) {
+    if (viewMode == CalendarViewMode.weekly) {
+      final startOfWeek =
+          baseDate.subtract(Duration(days: baseDate.weekday % 7));
+      final endOfWeek = startOfWeek.add(const Duration(days: 6));
+      return Map.fromEntries(
+        moods.entries.where((e) =>
+            e.key.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
+            e.key.isBefore(endOfWeek.add(const Duration(days: 1)))),
+      );
+    } else {
+      final startOfMonth = DateTime(baseDate.year, baseDate.month, 1);
+      final endOfMonth = DateTime(baseDate.year, baseDate.month + 1, 0);
+      return Map.fromEntries(
+        moods.entries.where((e) =>
+            e.key.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
+            e.key.isBefore(endOfMonth.add(const Duration(days: 1)))),
+      );
+    }
+  }
+
+  LineChartBarData _createChartData(Map<DateTime, int> moods) {
+    final spots = moods.entries
         .map((e) => FlSpot(
-              viewMode == CalendarViewMode.weekly
-                  ? (e.key.weekday - 1).toDouble() // 0-6 for Mon-Sun
-                  : e.key.day.toDouble(), // 1-31 for monthly view
+              e.key.millisecondsSinceEpoch.toDouble(),
               e.value.toDouble(),
             ))
         .toList()
@@ -111,41 +147,55 @@ class _TrendChart extends ConsumerWidget {
       isCurved: true,
       color: Colors.blue,
       barWidth: 2,
-      dotData: FlDotData(show: false),
+      dotData: const FlDotData(show: false),
     );
   }
 
-  String _getDayLabel(double value) {
-    // Convert 0-6 to day abbreviations
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final index = value.toInt();
-    return index >= 0 && index < 7 ? days[index] : '';
+  double _getMinX(DateTime baseDate, CalendarViewMode viewMode) {
+    return viewMode == CalendarViewMode.weekly
+        ? baseDate
+            .subtract(Duration(days: baseDate.weekday % 7))
+            .millisecondsSinceEpoch
+            .toDouble()
+        : DateTime(baseDate.year, baseDate.month, 1)
+            .millisecondsSinceEpoch
+            .toDouble();
+  }
+
+  double _getMaxX(DateTime baseDate, CalendarViewMode viewMode) {
+    return viewMode == CalendarViewMode.weekly
+        ? baseDate
+            .subtract(Duration(days: baseDate.weekday % 7))
+            .add(const Duration(days: 6))
+            .millisecondsSinceEpoch
+            .toDouble()
+        : DateTime(baseDate.year, baseDate.month + 1, 0)
+            .millisecondsSinceEpoch
+            .toDouble();
+  }
+
+  String _getDayLabel(int weekday) {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[weekday % 7];
   }
 }
 
 class _InsightsCard extends ConsumerWidget {
   final WidgetRef ref;
 
-  _InsightsCard(this.ref);
+  const _InsightsCard(this.ref);
 
   @override
-  Widget build(BuildContext context, _) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
-      margin: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Text(
           ref.getMoodInsight(),
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ),
     );
   }
-}
-
-class MoodEntry {
-  final DateTime date;
-  final double value;
-
-  MoodEntry(this.date, this.value);
 }

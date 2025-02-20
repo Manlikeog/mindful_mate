@@ -2,14 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mindful_mate/providers/system_setup/theme_data_provider.dart';
 import 'package:mindful_mate/screens/onboarding/onboarding_screen.dart';
+import 'package:mindful_mate/utils/app_settings/images_strings.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
+import 'package:mindful_mate/utils/extension/auto_resize.dart';
 import 'package:mindful_mate/utils/local_keys.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -43,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Future<Timer> initialAction() async {
     // ref.read(apiKey.notifier).getApiKey();
     return Timer(
-      const Duration(seconds: 5),
+      const Duration(seconds: 3),
       () async {
         bool isItAFirstTimeLaunch = await injector.quickStorage.returnBool(
           key: ObjectKeys.firstTimeLaunch,
@@ -90,20 +94,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           children: [
             // Animated plant growth (Lottie animation)
             Lottie.asset(
-              'assets/animation/plant_growth.json', // Your Lottie file
-              width: 200,
-              height: 200,
+              splashImage, // Your Lottie file
+              width: 200.ww(context),
+              height: 200.hh(context),
               controller: _controller,
             ),
-
-            const SizedBox(height: 24),
-
+            Gap( 24.hh(context)),
             // App name with subtle text animation
             AnimatedOpacity(
               duration: const Duration(milliseconds: 1000),
               opacity: 1.0,
               child: Text(
-                'MindfulMate',
+                 AppLocalizations.of(context)!.mindfulMate,
                 style: GoogleFonts.poppins(
                   color: injector.palette.pureWhite,
                   fontSize: 32,
@@ -111,13 +113,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 ),
               ),
             ),
-
-            const SizedBox(height: 16),
-
+            Gap( 16.hh(context)),
             CircularProgressIndicator.adaptive(
               valueColor:
                   AlwaysStoppedAnimation<Color>(injector.palette.accentColor),
-              strokeWidth: 2,
+              strokeWidth: 2.ww(context),
               backgroundColor: (themeMode == ThemeMode.dark)
                   ? injector.palette.pureWhite
                   : injector.palette.accentColor,

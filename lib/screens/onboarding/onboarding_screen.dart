@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lottie/lottie.dart'; // Added for animations
 import 'package:mindful_mate/providers/system_setup/theme_data_provider.dart';
+import 'package:mindful_mate/screens/home/home_screen.dart';
+import 'package:mindful_mate/screens/mood/mood_screen.dart';
 import 'package:mindful_mate/screens/onboarding/model/onboarding_bottom_controls.dart';
 import 'package:mindful_mate/screens/onboarding/model/onboarding_page.dart';
 import 'package:mindful_mate/utils/app_settings/images_strings.dart';
@@ -135,8 +137,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   void _handleSkip() => _completeOnboarding();
 
   void _completeOnboarding() {
+    print("ok");
     injector.quickStorage
         .storeBool(key: ObjectKeys.firstTimeLaunch, data: true);
-    // context.go(WelcomePageScreen.fullPath);
+    context.go(MoodTrackerScreen.fullPath);
   }
 }

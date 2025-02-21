@@ -9,11 +9,22 @@ final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 enum CalendarViewMode { weekly, monthly }
 
 extension MoodAnalysis on WidgetRef {
-  String getMoodInsight() {
-    final moods = read(moodProvider);
+  String getMoodInsight(DateTime baseDate, CalendarViewMode viewMode) {
+    final moods = watch(moodProvider);
     if (moods.isEmpty) return "Start tracking your mood to see insights! 🌱";
 
-    final entries = moods.entries;
+    // Filter data based on view mode
+    final filteredData = viewMode == CalendarViewMode.weekly
+        ? _filterWeeklyData(moods, baseDate)
+        : _filterMonthlyData(moods, baseDate);
+
+    if (filteredData.isEmpty) {
+      return viewMode == CalendarViewMode.weekly
+          ? "No mood data for this week"
+          : "No mood data for this month";
+    }
+
+    final entries = filteredData.entries;
     final happyDays = entries.where((entry) => entry.value >= 2).length;
     final averageMood = entries.isEmpty
         ? 0
@@ -24,6 +35,28 @@ extension MoodAnalysis on WidgetRef {
     }
     if (averageMood < 1.5) return "Let's focus on self-care this week 💆♀️";
     return "You felt happiest on weekends! 🎉";
+  }
+
+  Map<DateTime, int> _filterWeeklyData(
+      Map<DateTime, int> moods, DateTime baseDate) {
+    final start = baseDate.subtract(Duration(days: baseDate.weekday % 7));
+    final end = start.add(const Duration(days: 6));
+    return Map.fromEntries(
+      moods.entries.where((e) =>
+          e.key.isAfter(start.subtract(const Duration(days: 1))) &&
+          e.key.isBefore(end.add(const Duration(days: 1)))),
+    );
+  }
+
+  Map<DateTime, int> _filterMonthlyData(
+      Map<DateTime, int> moods, DateTime baseDate) {
+    final start = DateTime(baseDate.year, baseDate.month, 1);
+    final end = DateTime(baseDate.year, baseDate.month + 1, 0);
+    return Map.fromEntries(
+      moods.entries.where((e) =>
+          e.key.isAfter(start.subtract(const Duration(days: 1))) &&
+          e.key.isBefore(end.add(const Duration(days: 1)))),
+    );
   }
 }
 

@@ -24,146 +24,143 @@ class TrendChart extends ConsumerWidget {
       Colors.pink.shade300,
     ];
 
-    return Column(
-      children: [
-        Card(
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    return Card(
+      margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        height: 300,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          child: Container(
-            height: 300,
-            padding:
-                const EdgeInsets.only(top: 24, bottom: 12, left: 12, right: 15),
-            child: AspectRatio(
-              aspectRatio: 1.7,
-              child: LineChart(
-                LineChartData(
-                  lineTouchData: LineTouchData(
-                    handleBuiltInTouches: true,
-                    touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (touchedSpot) => Colors.pink,
-                      getTooltipItems: (spots) => spots.map((spot) {
-                        final emoji =
-                            ['😢', '😐', '😊', '😄', '🌟'][spot.y.toInt()];
-                        return LineTooltipItem(
-                          '$emoji\n${_formatDate(spot.x)}',
-                          const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            height: 1.4,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  gridData: const FlGridData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        interval: 1,
-                        getTitlesWidget: (value, meta) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Text(
-                            ['😢', '😐', '😊', '😄', '🌟'][value.toInt()],
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ),
-                        reservedSize: 40,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding:
+            const EdgeInsets.only(top: 24, bottom: 12, left: 12, right: 15),
+        child: AspectRatio(
+          aspectRatio: 1.7,
+          child: LineChart(
+            LineChartData(
+              lineTouchData: LineTouchData(
+                handleBuiltInTouches: true,
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (touchedSpot) => Colors.pink,
+                  getTooltipItems: (spots) => spots.map((spot) {
+                    final emoji =
+                        ['😢', '😐', '😊', '😄', '🌟'][spot.y.toInt()];
+                    return LineTooltipItem(
+                      '$emoji\n${_formatDate(spot.x)}',
+                      const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        height: 1.4,
                       ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      axisNameWidget: Text(
-                        "Mood Trend",
-                        style: kTextStyleFont600(context: context),
-                      ),
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final date = DateTime.fromMillisecondsSinceEpoch(
-                              value.toInt());
-                          return Transform.rotate(
-                            angle: -45 * (pi / 180),
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: Text(
-                                viewMode == CalendarViewMode.weekly
-                                    ? _getDayLabel(date.weekday)
-                                    : '${date.day} ${_monthAbbreviation(date.month)}',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey.shade600,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        reservedSize: 48,
-                        interval: viewMode == CalendarViewMode.weekly
-                            ? 86400000
-                            : null,
-                      ),
-                    ),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  minX: _getMinX(currentWeekStart, viewMode),
-                  maxX: _getMaxX(currentWeekStart, viewMode),
-                  minY: 0,
-                  maxY: 4,
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: _createSpots(filteredData),
-                      isCurved: true,
-                      curveSmoothness: 0.3,
-                      color: Colors.blue,
-                      barWidth: 3,
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: gradientColors
-                              .map((c) => c.withOpacity(0.3))
-                              .toList(),
-                        ),
-                      ),
-                      dotData: const FlDotData(show: false),
-                      shadow:
-                          const Shadow(color: Colors.black12, blurRadius: 8),
-                      gradient: LinearGradient(
-                        colors: gradientColors,
-                        stops: const [0.2, 0.5, 0.8],
-                      ),
-                    ),
-                  ],
+                    );
+                  }).toList(),
                 ),
               ),
+              gridData: const FlGridData(show: false),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    interval: 1,
+                    getTitlesWidget: (value, meta) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Text(
+                        ['😢', '😐', '😊', '😄', '🌟'][value.toInt()],
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                    reservedSize: 40,
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  axisNameWidget: Text(
+                    "Mood Trend",
+                    style: kTextStyleCustom(
+                      context: context,
+                      color: Colors.purple.shade600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      final date =
+                          DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                      return Transform.rotate(
+                        angle: -45 * (pi / 180),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                            viewMode == CalendarViewMode.weekly
+                                ? _getDayLabel(date.weekday)
+                                : '${date.day} ${_monthAbbreviation(date.month)}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    reservedSize: 48,
+                    interval:
+                        viewMode == CalendarViewMode.weekly ? 86400000 : null,
+                  ),
+                ),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              ),
+              borderData: FlBorderData(
+                show: true,
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              minX: _getMinX(currentWeekStart, viewMode),
+              maxX: _getMaxX(currentWeekStart, viewMode),
+              minY: 0,
+              maxY: 4,
+              lineBarsData: [
+                LineChartBarData(
+                  spots: _createSpots(filteredData),
+                  isCurved: true,
+                  curveSmoothness: 0.3,
+                  color: Colors.blue,
+                  barWidth: 3,
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      colors: gradientColors
+                          .map((c) => c.withOpacity(0.3))
+                          .toList(),
+                    ),
+                  ),
+                  dotData: const FlDotData(show: false),
+                  shadow: const Shadow(color: Colors.black12, blurRadius: 8),
+                  gradient: LinearGradient(
+                    colors: gradientColors,
+                    stops: const [0.2, 0.5, 0.8],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16, top: 8),
-          child: Text(
-            dateRangeText,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

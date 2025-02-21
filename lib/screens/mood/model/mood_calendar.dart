@@ -15,54 +15,67 @@ class MoodCalendar extends ConsumerWidget {
 
     return Card(
       margin: const EdgeInsets.all(16),
-      child: TableCalendar(
-        firstDay: DateTime.now().subtract(const Duration(days: 365)),
-        lastDay: DateTime.now(),
-        focusedDay: currentDisplayedDate,
-        calendarFormat: viewMode == CalendarViewMode.weekly
-            ? CalendarFormat.week
-            : CalendarFormat.month,
-        headerStyle: const HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
         ),
-        calendarBuilders: CalendarBuilders(
-          markerBuilder: (context, date, _) {
-            final mood = moods[date] ?? -1;
-            return mood != -1
-                ? Container(
-                    margin: const EdgeInsets.all(4),
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _moodColor(mood),
-                      shape: BoxShape.circle,
-                    ),
-                  )
-                : const SizedBox.shrink();
+        child: TableCalendar(
+          firstDay: DateTime.now().subtract(const Duration(days: 365)),
+          lastDay: DateTime.now(),
+          focusedDay: currentDisplayedDate,
+          calendarFormat: viewMode == CalendarViewMode.weekly
+              ? CalendarFormat.week
+              : CalendarFormat.month,
+          headerStyle: const HeaderStyle(
+            formatButtonVisible: false,
+            titleCentered: true,
+          ),
+          calendarBuilders: CalendarBuilders(
+            markerBuilder: (context, date, _) {
+              final mood = moods[date] ?? -1;
+              return mood != -1
+                  ? Container(
+                      margin: const EdgeInsets.all(4),
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _moodColor(mood),
+                        shape: BoxShape.circle,
+                      ),
+                    )
+                  : const SizedBox.shrink();
+            },
+          ),
+          onDaySelected: (day, _) => _showMoodPicker(context, ref, day),
+          onFormatChanged: (format) {
+            // Update view mode and adjust displayed period
+            final newViewMode = format == CalendarFormat.week
+                ? CalendarViewMode.weekly
+                : CalendarViewMode.monthly;
+            ref.read(calendarViewProvider.notifier).state = newViewMode;
+
+            // Reset displayed period to start of week/month
+            final newDate = newViewMode == CalendarViewMode.weekly
+                ? currentDisplayedDate
+                    .subtract(Duration(days: currentDisplayedDate.weekday % 7))
+                : DateTime(
+                    currentDisplayedDate.year, currentDisplayedDate.month, 1);
+
+            ref.read(currentDisplayedWeekProvider.notifier).state = newDate;
+          },
+          onPageChanged: (focusedDay) {
+            // Update displayed period when user navigates
+            ref.read(currentDisplayedWeekProvider.notifier).state = focusedDay;
           },
         ),
-        onDaySelected: (day, _) => _showMoodPicker(context, ref, day),
-        onFormatChanged: (format) {
-          // Update view mode and adjust displayed period
-          final newViewMode = format == CalendarFormat.week
-              ? CalendarViewMode.weekly
-              : CalendarViewMode.monthly;
-          ref.read(calendarViewProvider.notifier).state = newViewMode;
-
-          // Reset displayed period to start of week/month
-          final newDate = newViewMode == CalendarViewMode.weekly
-              ? currentDisplayedDate
-                  .subtract(Duration(days: currentDisplayedDate.weekday % 7))
-              : DateTime(
-                  currentDisplayedDate.year, currentDisplayedDate.month, 1);
-
-          ref.read(currentDisplayedWeekProvider.notifier).state = newDate;
-        },
-        onPageChanged: (focusedDay) {
-          // Update displayed period when user navigates
-          ref.read(currentDisplayedWeekProvider.notifier).state = focusedDay;
-        },
       ),
     );
   }

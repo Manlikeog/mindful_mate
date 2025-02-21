@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:gap/gap.dart';
 import 'package:mindful_mate/providers/home/mood_provider.dart';
 import 'package:mindful_mate/providers/mood_tracker_provider.dart';
+import 'package:mindful_mate/screens/mood/model/insight_card.dart';
 import 'package:mindful_mate/screens/mood/model/mood_calendar.dart';
 import 'package:mindful_mate/screens/mood/model/trend_chart.dart';
 
@@ -28,7 +29,7 @@ class MoodTrackerScreen extends ConsumerWidget {
           children: [
             const MoodCalendar(),
             const TrendChart(),
-            _InsightsCard(ref),
+            InsightsCard(),
           ],
         ),
       ),
@@ -155,22 +156,22 @@ class _ViewModeToggle extends ConsumerWidget {
 
 // }
 
-class _InsightsCard extends ConsumerWidget {
-  final WidgetRef ref;
+// class _InsightsCard extends ConsumerWidget {
+//   final WidgetRef ref;
 
-  const _InsightsCard(this.ref);
+//   const _InsightsCard(this.ref);
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          ref.getMoodInsight(),
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     return Card(
+//       margin: const EdgeInsets.all(16),
+//       child: Padding(
+//         padding: const EdgeInsets.all(16),
+//         child: Text(
+//           ref.getMoodInsight(),
+//           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+//         ),
+//       ),
+//     );
+//   }
+// }

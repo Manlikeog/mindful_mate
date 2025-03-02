@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mindful_mate/providers/system_setup/theme_data_provider.dart';
+import 'package:mindful_mate/screens/journal/journal_screen.dart';
 import 'package:mindful_mate/screens/onboarding/onboarding_screen.dart';
 import 'package:mindful_mate/utils/app_settings/images_strings.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
@@ -71,7 +72,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               print('its here');
             }
             context.go(
-              getLastRoute,
+              JournalScreen.fullPath,
             );
           }
         }
@@ -99,13 +100,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               height: 200.hh(context),
               controller: _controller,
             ),
-            Gap( 24.hh(context)),
+            Gap(24.hh(context)),
             // App name with subtle text animation
             AnimatedOpacity(
               duration: const Duration(milliseconds: 1000),
               opacity: 1.0,
               child: Text(
-                 AppLocalizations.of(context)!.mindfulMate,
+                AppLocalizations.of(context)!.mindfulMate,
                 style: GoogleFonts.poppins(
                   color: injector.palette.pureWhite,
                   fontSize: 32,
@@ -113,7 +114,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 ),
               ),
             ),
-            Gap( 16.hh(context)),
+            Gap(16.hh(context)),
             CircularProgressIndicator.adaptive(
               valueColor:
                   AlwaysStoppedAnimation<Color>(injector.palette.accentColor),

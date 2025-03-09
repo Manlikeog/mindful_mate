@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mindful_mate/providers/system_setup/theme_data_provider.dart';
 import 'package:mindful_mate/screens/journal/journal_screen.dart';
+import 'package:mindful_mate/screens/mood/mood_screen.dart';
 import 'package:mindful_mate/screens/onboarding/onboarding_screen.dart';
 import 'package:mindful_mate/utils/app_settings/images_strings.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';

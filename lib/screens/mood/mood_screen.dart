@@ -1,177 +1,122 @@
+// lib/screens/mood_tracker_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:gap/gap.dart';
-import 'package:mindful_mate/providers/home/mood_provider.dart';
-import 'package:mindful_mate/providers/mood_tracker_provider.dart';
+import 'package:mindful_mate/providers/gamification/gamification_provider.dart';
+import 'package:mindful_mate/providers/gamification/user_progress.dart';
 import 'package:mindful_mate/screens/mood/model/insight_card.dart';
 import 'package:mindful_mate/screens/mood/model/mood_calendar.dart';
 import 'package:mindful_mate/screens/mood/model/trend_chart.dart';
+import 'package:mindful_mate/utils/app_settings/injector.dart';
+import 'package:confetti/confetti.dart';
+import 'package:mindful_mate/utils/app_settings/palette.dart';
 
-class MoodTrackerScreen extends ConsumerWidget {
+class MoodTrackerScreen extends ConsumerStatefulWidget {
   static const String path = 'moodTracker';
   static const String fullPath = '/moodTracker';
   static const String pathName = '/moodTracker';
-
   const MoodTrackerScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  MoodTrackerScreenState createState() => MoodTrackerScreenState();
+}
+
+class MoodTrackerScreenState extends ConsumerState<MoodTrackerScreen> {
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = ref.watch(gamificationProvider);
+    final palette = injector.palette;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mood History'),
-        actions: const [
-          _ViewModeToggle(),
+        elevation: 0,
+        backgroundColor: palette.pureWhite,
+        title: Text(
+          'Mood History',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: injector.palette.textColor,
+              ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildProgressCard(progress, palette),
+                const MoodCalendar(),
+                const TrendChart(),
+                const InsightsCard(),
+                const Gap(16),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              colors: [
+                palette.primaryColor,
+                palette.secondaryColor,
+                palette.accentColor
+              ],
+            ),
+          ),
         ],
       ),
-      body: SingleChildScrollView(
+    );
+  }
+
+  Widget _buildProgressCard(UserProgress progress, Palette palette) {
+    return Card(
+      margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const MoodCalendar(),
-            const TrendChart(),
-            InsightsCard(),
+            Text('Your Progress',
+                style: Theme.of(context).textTheme.titleLarge),
+            const Gap(8),
+            LinearProgressIndicator(
+              value: (progress.totalPoints % 100) / 100,
+              backgroundColor: palette.dividerColor,
+              valueColor: AlwaysStoppedAnimation(palette.primaryColor),
+            ),
+            const Gap(8),
+            Text(
+                'Level ${progress.level} | Streak: ${progress.streakCount} days'),
+            Text('Points: ${progress.totalPoints}'),
+            const Gap(8),
+            Wrap(
+              spacing: 8,
+              children: progress.badges
+                  .map((badge) => Chip(label: Text(badge)))
+                  .toList(),
+            ),
           ],
         ),
       ),
     );
   }
-}
 
-class _ViewModeToggle extends ConsumerWidget {
-  const _ViewModeToggle();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final viewMode = ref.watch(calendarViewProvider);
-    return Padding(
-      padding: const EdgeInsets.only(right: 16),
-      child: ToggleButtons(
-        isSelected: [
-          viewMode == CalendarViewMode.weekly,
-          viewMode == CalendarViewMode.monthly,
-        ],
-        onPressed: (index) => ref.read(calendarViewProvider.notifier).state =
-            index == 0 ? CalendarViewMode.weekly : CalendarViewMode.monthly,
-        children: const [Text('Week'), Text('Month')],
-      ),
-    );
+  void showRewardAnimation() {
+    _confettiController.play();
   }
 }
-
-// class TrendChart extends ConsumerWidget {
-//   const TrendChart({super.key});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final moodData = ref.watch(moodProvider);
-//     final viewMode = ref.watch(calendarViewProvider);
-//     final currentWeekStart = ref.watch(currentDisplayedWeekProvider);
-
-//     final filteredData = _filterData(moodData, currentWeekStart, viewMode);
-//     final dateRangeText = _getDateRangeText(currentWeekStart, viewMode);
-
-//     return Column(
-//       children: [
-//         Card(
-//             margin: const EdgeInsets.all(16),
-//             child: Container(
-//               height: 200,
-//               padding: const EdgeInsets.symmetric(horizontal: 17),
-//               child: LineChart(
-//                 LineChartData(
-//                   lineBarsData: [_createChartData(filteredData)],
-//                   titlesData: FlTitlesData(
-//                     topTitles: AxisTitles(
-//                         sideTitles: SideTitles(showTitles: false),
-//                         axisNameWidget: Text('mood trend'),
-//                         axisNameSize: 35),
-//                     rightTitles: const AxisTitles(
-//                       sideTitles: SideTitles(showTitles: false),
-//                     ),
-//                     leftTitles: AxisTitles(
-//                       sideTitles: SideTitles(
-//                         showTitles: true,
-//                         getTitlesWidget: (value, meta) {
-//                           final index = value.toInt();
-//                           return Text(
-//                             ['😢', '😐', '😊', '😄', '🌟'][index],
-//                             style: const TextStyle(fontSize: 16),
-//                           );
-//                         },
-//                         interval: 1,
-//                         reservedSize: 40,
-//                       ),
-//                     ),
-//                     bottomTitles: AxisTitles(
-//                       sideTitles: SideTitles(
-//                         showTitles: true,
-//                         getTitlesWidget: (value, meta) {
-//                           final date = DateTime.fromMillisecondsSinceEpoch(
-//                               value.toInt());
-//                           return Transform.rotate(
-//                             angle: -45 *
-//                                 (3.1416 / 180), // Rotate labels 45 degrees
-//                             child: Padding(
-//                               padding: const EdgeInsets.only(top: 8),
-//                               child: Text(
-//                                 viewMode == CalendarViewMode.weekly
-//                                     ? _getDayLabel(date.weekday)
-//                                     : date.day.toString(),
-//                                 style: const TextStyle(
-//                                   fontSize: 10, // Reduced font size
-//                                   letterSpacing: 0.5,
-//                                 ),
-//                               ),
-//                             ),
-//                           );
-//                         },
-//                         reservedSize: 48, // Increased reserved space
-//                         interval: viewMode == CalendarViewMode.weekly
-//                             ? 86400000
-//                             : null,
-//                       ),
-//                     ),
-//                   ),
-//                   minX: _getMinX(currentWeekStart, viewMode),
-//                   maxX: _getMaxX(currentWeekStart, viewMode),
-//                   minY: 0,
-//                   maxY: 4,
-//                   borderData: FlBorderData(show: false),
-//                 ),
-//               ),
-//             )),
-//         Padding(
-//           padding: const EdgeInsets.only(bottom: 16),
-//           child: Text(
-//             dateRangeText,
-//             style: TextStyle(
-//                 fontSize: 16,
-//                 color: Colors.grey[600],
-//                 fontWeight: FontWeight.w500),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-
-// }
-
-// class _InsightsCard extends ConsumerWidget {
-//   final WidgetRef ref;
-
-//   const _InsightsCard(this.ref);
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     return Card(
-//       margin: const EdgeInsets.all(16),
-//       child: Padding(
-//         padding: const EdgeInsets.all(16),
-//         child: Text(
-//           ref.getMoodInsight(),
-//           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-//         ),
-//       ),
-//     );
-//   }
-// }

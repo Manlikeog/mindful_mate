@@ -1,13 +1,14 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mindful_mate/screens/mood/model/mood_entry.dart';
 
 class MoodNotifier extends StateNotifier<Map<DateTime, int>> {
   MoodNotifier() : super({});
 
-  void logMood(int index, DateTime datetime) {
+  void logMood(MoodEntry entry) {
     state = {
       ...state,
-      datetime : index
+      entry.date : entry.moodRating,
     };
     HapticFeedback.lightImpact();
   }

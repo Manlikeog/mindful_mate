@@ -84,37 +84,42 @@ class MoodTrackerScreenState extends ConsumerState<MoodTrackerScreen> {
   }
 
   Widget _buildProgressCard(UserProgress progress, Palette palette) {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text('Your Progress',
-                style: Theme.of(context).textTheme.titleLarge),
-            const Gap(8),
-            LinearProgressIndicator(
-              value: (progress.totalPoints % 100) / 100,
-              backgroundColor: palette.dividerColor,
-              valueColor: AlwaysStoppedAnimation(palette.primaryColor),
-            ),
-            const Gap(8),
-            Text(
-                'Level ${progress.level} | Streak: ${progress.streakCount} days'),
-            Text('Points: ${progress.totalPoints}'),
-            const Gap(8),
-            Wrap(
-              spacing: 8,
-              children: progress.badges
-                  .map((badge) => Chip(label: Text(badge)))
-                  .toList(),
-            ),
-          ],
-        ),
-      ),
-    );
+  String levelName;
+  switch (progress.level) {
+    case 1: levelName = 'Beginner'; break;
+    case 2: levelName = 'Explorer'; break;
+    case 3: levelName = 'Champion'; break;
+    case 4: levelName = 'Master'; break;
+    default: levelName = 'Legend ${progress.level - 4}'; break;
   }
+
+  return Card(
+    margin: const EdgeInsets.all(16),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Text('Your Progress', style: Theme.of(context).textTheme.titleLarge),
+          const Gap(8),
+          LinearProgressIndicator(
+            value: (progress.totalPoints % 100) / 100, // Simplified; adjust for tiers
+            backgroundColor: palette.dividerColor,
+            valueColor: AlwaysStoppedAnimation(palette.primaryColor),
+          ),
+          const Gap(8),
+          Text('Level $levelName (${progress.level}) | Streak: ${progress.streakCount} days'),
+          Text('Points: ${progress.totalPoints}'),
+          const Gap(8),
+          Wrap(
+            spacing: 8,
+            children: progress.badges.map((badge) => Chip(label: Text(badge))).toList(),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   void showRewardAnimation() {
     _confettiController.play();

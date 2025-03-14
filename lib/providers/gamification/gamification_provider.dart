@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/providers/gamification/user_progress.dart';
 import 'package:mindful_mate/repository/database_Helper.dart';
 
-
-final gamificationProvider = StateNotifierProvider<GamificationNotifier, UserProgress>((ref) {
+final gamificationProvider =
+    StateNotifierProvider<GamificationNotifier, UserProgress>((ref) {
   return GamificationNotifier();
 });
 
@@ -16,41 +16,46 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
   }
 
   Future<void> _loadProgress() async {
-  state = await _dbHelper.getUserProgress();
+    state = await _dbHelper.getUserProgress();
   }
 
   void logActivity({required String activityType}) {
-    int pointsEarned = activityType == 'mood_log' ? 10 : 20; // Example: mood log = 10, relaxation = 20
+    final now = DateTime.now();
+    int pointsEarned = activityType == 'mood_log' ? 10 : 20;
     int newPoints = state.totalPoints + pointsEarned;
-    int newLevel = (newPoints ~/ 100) + 1; // Level up every 100 points
+    int newLevel = (newPoints ~/ 100) + 1;
     List<String> newBadges = List.from(state.badges);
 
+    // Update streak
+    int newStreak = _updateStreak(now);
+
     // Award badges
-    if (activityType == 'mood_log' && state.streakCount >= 7 && !newBadges.contains('StreakMaster')) {
+    if (newStreak >= 7 && !newBadges.contains('StreakMaster')) {
       newBadges.add('StreakMaster');
     }
-    // if (newStreak == 3 && !newBadges.contains('StreakMaster')) {
-    //   newBadges.add('StreakMaster');
-    // }
-    // if (newPoints >= 50 && !newBadges.contains('Beginner')) {
-    //   newBadges.add('Beginner');
-    // }
 
-   state = UserProgress(
-      streakCount: _updateStreak(),
+    state = UserProgress(
+      streakCount: newStreak,
       totalPoints: newPoints,
       level: newLevel,
       badges: newBadges,
+      lastLogDate: now,
     );
     _dbHelper.updateUserProgress(state);
   }
 
-  int _updateStreak() {
-    final now = DateTime.now();
-    final lastActivity = DateTime.fromMillisecondsSinceEpoch(state.totalPoints); // Simplified
-    if (now.difference(lastActivity).inDays <= 1) {
-      return state.streakCount + 1;
+  int _updateStreak(DateTime logDate) {
+    if (state.lastLogDate == null) {
+      return 1; // First log ever
     }
-    return 1; // Reset streak if more than a day has passed
+    final lastLog = state.lastLogDate!;
+    final diff = logDate.difference(lastLog).inDays;
+    if (diff == 1) {
+      return state.streakCount + 1; // Consecutive day
+    } else if (diff == 0) {
+      return state.streakCount; // Same day, no increment
+    } else {
+      return 1; // Missed a day, reset streak
+    }
   }
 }

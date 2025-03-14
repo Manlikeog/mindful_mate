@@ -8,13 +8,14 @@ class MoodNotifier extends StateNotifier<Map<DateTime, int>> {
   void logMood(MoodEntry entry) {
     state = {
       ...state,
-      entry.date : entry.moodRating,
+      entry.date: entry.moodRating,
     };
     HapticFeedback.lightImpact();
   }
 }
 
-final moodProvider = StateNotifierProvider<MoodNotifier, Map<DateTime, int>>((ref) => MoodNotifier());
+final moodProvider = StateNotifierProvider<MoodNotifier, Map<DateTime, int>>(
+    (ref) => MoodNotifier());
 
 
 // import 'package:flutter/services.dart';

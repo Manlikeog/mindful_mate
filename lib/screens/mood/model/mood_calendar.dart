@@ -110,28 +110,62 @@ class MoodCalendar extends ConsumerWidget {
   }
 
   void _showMoodPicker(BuildContext context, WidgetRef ref, DateTime day) {
+    final moods = ref.read(moodProvider);
+    final isToday = isSameDay(day, DateTime.now());
+    final existingMood = moods[day];
+
+    if (!isToday && existingMood != null) {
+      // Show confirmation dialog for previous day with existing mood
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Overwrite Mood?'),
+          content: const Text(
+              'A mood is already logged for this day. Are you sure you want to overwrite it?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _showMoodSelectionDialog(context, ref, day, isToday);
+              },
+              child: const Text('Overwrite'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Proceed directly to mood selection for today or days without existing moods
+      _showMoodSelectionDialog(context, ref, day, isToday);
+    }
+  }
+
+  void _showMoodSelectionDialog(
+      BuildContext context, WidgetRef ref, DateTime day, bool isToday) {
     showDialog(
       context: context,
-      builder: (ctx) => Container(
-        height: 200,
-        padding: const EdgeInsets.all(16),
-        child: Row(
+      builder: (ctx) => AlertDialog(
+        content: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(
             5,
             (index) => GestureDetector(
               onTap: () {
-                ref
-                    .read(moodProvider.notifier)
-                    .logMood(MoodEntry(date: day, moodRating: index));
-                ref
-                    .read(gamificationProvider.notifier)
-                    .logActivity(activityType: 'mood_log');
-                Navigator.pop(context);
-                if (context.mounted) {
-                  (context.findAncestorStateOfType<MoodTrackerScreenState>())
-                      ?.showRewardAnimation();
+                final newMood = MoodEntry(date: day, moodRating: index);
+                ref.read(moodProvider.notifier).logMood(newMood);
+                if (isToday) {
+                  ref
+                      .read(gamificationProvider.notifier)
+                      .logActivity(activityType: 'mood_log');
+                  if (context.mounted) {
+                    (context.findAncestorStateOfType<MoodTrackerScreenState>())
+                        ?.showRewardAnimation();
+                  }
                 }
+                Navigator.pop(ctx);
               },
               child: Text(['😢', '😐', '😊', '😄', '🌟'][index],
                   style: const TextStyle(fontSize: 32)),
@@ -140,6 +174,12 @@ class MoodCalendar extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 }
   // lib/screens/mood/model/mood_calendar.dart (partial)

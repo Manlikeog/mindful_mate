@@ -17,7 +17,6 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    // Get the app's documents directory using path_provider
     final directory = await getApplicationDocumentsDirectory();
     String path = join(directory.path, 'mental_health.db');
 
@@ -26,14 +25,15 @@ class DatabaseHelper {
       version: 1,
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE user_progress (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            streakCount INTEGER,
-            totalPoints INTEGER,
-            level INTEGER,
-            badges TEXT
-          )
-        ''');
+        CREATE TABLE user_progress (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          streakCount INTEGER,
+          totalPoints INTEGER,
+          level INTEGER,
+          badges TEXT,
+          lastLogDate TEXT
+        )
+      ''');
         await db.insert('user_progress', UserProgress().toMap());
       },
       onOpen: (db) async {

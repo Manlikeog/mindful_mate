@@ -1,7 +1,6 @@
-// lib/providers/gamification_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/providers/gamification/user_progress.dart';
-import 'package:mindful_mate/repository/database_Helper.dart';
+import 'package:mindful_mate/repository/database_helper.dart';
 
 final gamificationProvider =
     StateNotifierProvider<GamificationNotifier, UserProgress>((ref) {
@@ -21,16 +20,21 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
 
   void logActivity({required String activityType}) {
     final now = DateTime.now();
-    int pointsEarned = activityType == 'mood_log' ? 10 : 20;
+    final isFirstLogToday =
+        state.lastLogDate == null || !isSameDay(state.lastLogDate!, now);
+
+    int pointsEarned = (activityType == 'mood_log' && isFirstLogToday) ? 10 : 0;
     int newPoints = state.totalPoints + pointsEarned;
     int newLevel = (newPoints ~/ 100) + 1;
     List<String> newBadges = List.from(state.badges);
 
-    // Update streak
-    int newStreak = _updateStreak(now);
+    // Update streak only if it's the first log of the day
+    int newStreak = isFirstLogToday ? _updateStreak(now) : state.streakCount;
 
-    // Award badges
-    if (newStreak >= 7 && !newBadges.contains('StreakMaster')) {
+    // Award badges based on streak (only on first log)
+    if (isFirstLogToday &&
+        newStreak >= 7 &&
+        !newBadges.contains('StreakMaster')) {
       newBadges.add('StreakMaster');
     }
 
@@ -53,9 +57,16 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
     if (diff == 1) {
       return state.streakCount + 1; // Consecutive day
     } else if (diff == 0) {
-      return state.streakCount; // Same day, no increment
+      return state.streakCount; // Same day, no change
     } else {
       return 1; // Missed a day, reset streak
     }
   }
+}
+
+// Utility function to compare days
+bool isSameDay(DateTime date1, DateTime date2) {
+  return date1.year == date2.year &&
+      date1.month == date2.month &&
+      date1.day == date2.day;
 }

@@ -143,38 +143,33 @@ class MoodCalendar extends ConsumerWidget {
     }
   }
 
-  void _showMoodSelectionDialog(
-      BuildContext context, WidgetRef ref, DateTime day, bool isToday) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        content: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(
-            5,
-            (index) => GestureDetector(
-              onTap: () {
-                final newMood = MoodEntry(date: day, moodRating: index);
-                ref.read(moodProvider.notifier).logMood(newMood);
-                if (isToday) {
-                  ref
-                      .read(gamificationProvider.notifier)
-                      .logActivity(activityType: 'mood_log');
-                  if (context.mounted) {
-                    (context.findAncestorStateOfType<MoodTrackerScreenState>())
-                        ?.showRewardAnimation();
-                  }
+  void _showMoodSelectionDialog(BuildContext context, WidgetRef ref, DateTime day, bool isToday) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(
+          5,
+          (index) => GestureDetector(
+            onTap: () {
+              final newMood = MoodEntry(date: day, moodRating: index);
+              ref.read(moodProvider.notifier).logMood(newMood);
+              if (isToday) {
+                ref.read(gamificationProvider.notifier).logActivity(activityType: 'mood_log');
+                if (context.mounted) {
+                  (context.findAncestorStateOfType<MoodTrackerScreenState>())?.showRewardAnimation();
                 }
-                Navigator.pop(ctx);
-              },
-              child: Text(['😢', '😐', '😊', '😄', '🌟'][index],
-                  style: const TextStyle(fontSize: 32)),
-            ),
+              }
+              Navigator.pop(ctx);
+            },
+            child: Text(['😢', '😐', '😊', '😄', '🌟'][index], style: const TextStyle(fontSize: 32)),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   bool isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&

@@ -64,18 +64,21 @@ class MoodCalendar extends ConsumerWidget {
           ),
           calendarBuilders: CalendarBuilders(
             markerBuilder: (context, date, _) {
-              final mood = moods[date] ?? -1;
-              return mood != -1
-                  ? Container(
-                      margin: const EdgeInsets.all(4),
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: _moodColor(mood),
-                        shape: BoxShape.circle,
-                      ),
-                    )
-                  : null;
+              // Normalize the date to only year, month, day
+              final normalizedDate = DateTime(date.year, date.month, date.day);
+              final moodEntry = moods[normalizedDate];
+              if (moodEntry != null) {
+                return Container(
+                  margin: const EdgeInsets.all(4),
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _moodColor(moodEntry.moodRating),
+                    shape: BoxShape.circle,
+                  ),
+                );
+              }
+              return null;
             },
           ),
           onDaySelected: (day, _) => _showMoodPicker(context, ref, day),
@@ -99,23 +102,23 @@ class MoodCalendar extends ConsumerWidget {
     );
   }
 
-  Color _moodColor(int index) {
+  Color _moodColor(int rating) {
     return [
       Colors.red, // 😢
       Colors.orange, // 😐
       Colors.lime, // 😊
       Colors.green, // 😄
       injector.palette.accentColor, // 🌟 (gold)
-    ][index];
+    ][rating];
   }
 
   void _showMoodPicker(BuildContext context, WidgetRef ref, DateTime day) {
     final moods = ref.read(moodProvider);
     final isToday = isSameDay(day, DateTime.now());
-    final existingMood = moods[day];
+    final existingMood =
+        moods[DateTime(day.year, day.month, day.day)]; // Normalize here too
 
     if (!isToday && existingMood != null) {
-      // Show confirmation dialog for previous day with existing mood
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -138,38 +141,93 @@ class MoodCalendar extends ConsumerWidget {
         ),
       );
     } else {
-      // Proceed directly to mood selection for today or days without existing moods
       _showMoodSelectionDialog(context, ref, day, isToday);
     }
   }
 
-  void _showMoodSelectionDialog(BuildContext context, WidgetRef ref, DateTime day, bool isToday) {
-  showDialog(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      content: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(
-          5,
-          (index) => GestureDetector(
-            onTap: () {
-              final newMood = MoodEntry(date: day, moodRating: index);
-              ref.read(moodProvider.notifier).logMood(newMood);
-              if (isToday) {
-                ref.read(gamificationProvider.notifier).logActivity(activityType: 'mood_log');
-                if (context.mounted) {
-                  (context.findAncestorStateOfType<MoodTrackerScreenState>())?.showRewardAnimation();
-                }
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(['😢', '😐', '😊', '😄', '🌟'][index], style: const TextStyle(fontSize: 32)),
-          ),
+  void _showMoodSelectionDialog(
+      BuildContext context, WidgetRef ref, DateTime day, bool isToday) {
+    String? note;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                5,
+                (index) => GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx2) => AlertDialog(
+                        title: const Text('Add a Note (Optional)'),
+                        content: TextField(
+                          onChanged: (value) => note = value,
+                          decoration: const InputDecoration(
+                              hintText: 'How are you feeling?'),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              final newMood = MoodEntry(
+                                  date: DateTime(day.year, day.month, day.day),
+                                  moodRating: index,
+                                  note: note);
+                              ref.read(moodProvider.notifier).logMood(newMood);
+                              if (isToday) {
+                                ref
+                                    .read(gamificationProvider.notifier)
+                                    .logActivity(activityType: 'mood_log');
+                                if (context.mounted) {
+                                  (context.findAncestorStateOfType<
+                                          MoodTrackerScreenState>())
+                                      ?.showRewardAnimation();
+                                }
+                              }
+                              Navigator.pop(ctx2);
+                              Navigator.pop(ctx);
+                            },
+                            child: const Text('Save'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              final newMood = MoodEntry(
+                                  date: DateTime(day.year, day.month, day.day),
+                                  moodRating: index,
+                                  note: "");
+                              ref.read(moodProvider.notifier).logMood(newMood);
+                              if (isToday) {
+                                ref
+                                    .read(gamificationProvider.notifier)
+                                    .logActivity(activityType: 'mood_log');
+                                if (context.mounted) {
+                                  (context.findAncestorStateOfType<
+                                          MoodTrackerScreenState>())
+                                      ?.showRewardAnimation();
+                                }
+                              }
+                              Navigator.pop(ctx2);
+                              Navigator.pop(ctx);
+                            },
+                            child: const Text('No Notes'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: Text(['😢', '😐', '😊', '😄', '🌟'][index],
+                      style: const TextStyle(fontSize: 32)),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   bool isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
@@ -177,108 +235,3 @@ class MoodCalendar extends ConsumerWidget {
         date1.day == date2.day;
   }
 }
-  // lib/screens/mood/model/mood_calendar.dart (partial)
-  
-// void _showEnhancedMoodPicker(BuildContext context, WidgetRef ref, DateTime day) {
-//   int rating = 3; // Default
-//   showDialog(
-//     context: context,
-//     builder: (context) => AlertDialog(
-//       title: Text('Log Your Mood'),
-//       content: StatefulBuilder(
-//         builder: (context, setState) => Column(
-//           mainAxisSize: MainAxisSize.min,
-//           children: [
-//             Slider(
-//               value: rating.toDouble(),
-//               min: 1,
-//               max: 5,
-//               divisions: 4,
-//               label: rating.toString(),
-//               onChanged: (value) => setState(() => rating = value.round()),
-//             ),
-//           ],
-//         ),
-//       ),
-//       actions: [
-//         TextButton(
-//           onPressed: () {
-//             ref.read(moodProvider.notifier).logMood(MoodEntry(date: day, moodRating: rating));
-//             ref.read(gamificationProvider.notifier).logActivity(activityType: 'mood_log');
-//             Navigator.pop(context);
-//                         if (context.mounted) {
-//               (context.findAncestorStateOfType<MoodTrackerScreenState>())?.showRewardAnimation();
-//             }
-//           },
-//           child: Text('Save'),
-//         ),
-//       ],
-//     ),
-//   );
-// }
-
-// void _showMoodPicker(BuildContext context, WidgetRef ref, DateTime day) {
-//   showDialog(
-//     context: context,
-//     builder: (context) => AlertDialog(
-//       content: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//         children: List.generate(5, (index) {
-//           return GestureDetector(
-//             onTap: () {
-//               ref.read(moodProvider.notifier).logMood(index, day);
-//               ref.read(gamificationProvider.notifier).logActivity(activityType: 'mood_log');
-//               Navigator.pop(context);
-//             },
-//             child: Text(['😢', '😐', '😊', '😄', '🌟'][index], style: const TextStyle(fontSize: 32)),
-//           );
-//         }),
-//       ),
-//     ),
-//   );
-// }
-
-//  void _showMoodPicker(BuildContext context, WidgetRef ref, DateTime day) {
-//     showModalBottomSheet(
-//       context: context,
-//       backgroundColor: Colors.transparent,
-//       builder: (ctx) => Container(
-//         height: 200,
-//         decoration: BoxDecoration(
-//           color: injector.palette.pureWhite,
-//           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-//         ),
-//         padding: const EdgeInsets.all(16),
-//         child: GridView.count(
-//           crossAxisCount: 5,
-//           mainAxisSpacing: 16,
-//           crossAxisSpacing: 16,
-//           children: List.generate(
-//             5,
-//             (index) => GestureDetector(
-//               onTap: () {
-//                 ref.read(moodProvider.notifier).logMood(index, day);
-//                 ref.read(selectedDateProvider.notifier).state = day;
-//                 Navigator.pop(context);
-//               },
-//               child: AnimatedContainer(
-//                 duration: const Duration(milliseconds: 200),
-//                 decoration: BoxDecoration(
-//                   color: ref.watch(moodProvider)[day] == index
-//                       ? injector.palette.primaryColor.withOpacity(0.2)
-//                       : Colors.transparent,
-//                   shape: BoxShape.circle,
-//                 ),
-//                 child: Center(
-//                   child: Text(
-//                     ['😢', '😐', '😊', '😄', '🌟'][index],
-//                     style: const TextStyle(fontSize: 32),
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }

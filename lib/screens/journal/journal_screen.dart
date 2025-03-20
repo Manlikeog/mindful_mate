@@ -14,11 +14,13 @@ class JournalScreen extends ConsumerStatefulWidget {
   static const String fullPath = '/journal';
   static const String pathName = '/journal';
 
+  const JournalScreen({super.key});
+
   @override
-  _JournalScreenState createState() => _JournalScreenState();
+  JournalScreenState createState() => JournalScreenState();
 }
 
-class _JournalScreenState extends ConsumerState<JournalScreen> {
+class JournalScreenState extends ConsumerState<JournalScreen> {
   Timer? _debounce;
 
   @override

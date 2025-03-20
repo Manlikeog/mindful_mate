@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/providers/home/mood_provider.dart';
 import 'package:mindful_mate/providers/mood_tracker_provider.dart';
+import 'package:mindful_mate/screens/mood/model/mood_entry.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 
 class TrendChart extends ConsumerWidget {
@@ -163,31 +164,33 @@ class TrendChart extends ConsumerWidget {
   }
 
   List<FlSpot> _createSpots(Map<DateTime, int> moods) {
-    return moods.entries
-        .map((e) => FlSpot(e.key.millisecondsSinceEpoch.toDouble(), e.value.toDouble()))
-        .toList()
-      ..sort((a, b) => a.x.compareTo(b.x));
-  }
+  return moods.entries
+      .map((e) => FlSpot(e.key.millisecondsSinceEpoch.toDouble(), e.value.toDouble()))
+      .toList()
+    ..sort((a, b) => a.x.compareTo(b.x));
+}
 
-  Map<DateTime, int> _filterData(Map<DateTime, int> moods, DateTime baseDate, CalendarViewMode viewMode) {
-    if (viewMode == CalendarViewMode.weekly) {
-      final startOfWeek = baseDate.subtract(Duration(days: baseDate.weekday % 7));
-      final endOfWeek = startOfWeek.add(const Duration(days: 6));
-      return Map.fromEntries(
-        moods.entries.where((e) =>
-            e.key.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
-            e.key.isBefore(endOfWeek.add(const Duration(days: 1)))),
-      );
-    } else {
-      final startOfMonth = DateTime(baseDate.year, baseDate.month, 1);
-      final endOfMonth = DateTime(baseDate.year, baseDate.month + 1, 0);
-      return Map.fromEntries(
-        moods.entries.where((e) =>
-            e.key.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
-            e.key.isBefore(endOfMonth.add(const Duration(days: 1)))),
-      );
-    }
+ Map<DateTime, int> _filterData(Map<DateTime, MoodEntry> moods, DateTime baseDate, CalendarViewMode viewMode) {
+  if (viewMode == CalendarViewMode.weekly) {
+    final startOfWeek = baseDate.subtract(Duration(days: baseDate.weekday % 7));
+    final endOfWeek = startOfWeek.add(const Duration(days: 6));
+    return Map.fromEntries(
+      moods.entries.where((e) =>
+          e.key.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
+          e.key.isBefore(endOfWeek.add(const Duration(days: 1)))).map((e) => MapEntry(e.key, e.value.moodRating)),
+    );
+  } else {
+    final startOfMonth = DateTime(baseDate.year, baseDate.month, 1);
+    final endOfMonth = DateTime(baseDate.year, baseDate.month + 1, 0);
+    return Map.fromEntries(
+      moods.entries.where((e) =>
+          e.key.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
+          e.key.isBefore(endOfMonth.add(const Duration(days: 1)))).map((e) => MapEntry(e.key, e.value.moodRating)),
+    );
   }
+}
+
+
 
   double _getMinX(DateTime baseDate, CalendarViewMode viewMode) {
     if (viewMode == CalendarViewMode.weekly) {

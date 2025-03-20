@@ -140,10 +140,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     print("ok");
     injector.quickStorage
         .storeBool(key: ObjectKeys.firstTimeLaunch, data: true);
-    context.go(MoodTrackerScreen.fullPath);
+    context.go(HomeScreen.fullPath);
     injector.quickStorage.storeString(
       key: ObjectKeys.path,
-      data: MoodTrackerScreen.fullPath,
+      data: HomeScreen.fullPath,
     );
   }
 }

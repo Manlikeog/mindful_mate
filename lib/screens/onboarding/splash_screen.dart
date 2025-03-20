@@ -73,7 +73,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               print('its here');
             }
             context.go(
-              MoodTrackerScreen.fullPath,
+              getLastRoute,
             );
           }
         }

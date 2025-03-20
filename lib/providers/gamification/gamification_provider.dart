@@ -3,13 +3,15 @@ import 'package:mindful_mate/providers/gamification/user_progress.dart';
 import 'package:mindful_mate/repository/database_helper.dart';
 import 'package:mindful_mate/screens/chanllenges/model/chanllenge.dart';
 
-final gamificationProvider = StateNotifierProvider<GamificationNotifier, UserProgress>((ref) {
+final gamificationProvider =
+    StateNotifierProvider<GamificationNotifier, UserProgress>((ref) {
   return GamificationNotifier();
 });
 
 class GamificationNotifier extends StateNotifier<UserProgress> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
-  final Map<String, int> _challengeProgress = {}; // Tracks progress per challenge
+  final Map<String, int> _challengeProgress =
+      {}; // Tracks progress per challenge
 
   GamificationNotifier() : super(UserProgress()) {
     _loadProgress();
@@ -21,19 +23,26 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
 
   void logActivity({required String activityType, Challenge? challenge}) {
     final now = DateTime.now();
-    final isFirstLogToday = state.lastLogDate == null || !isSameDay(state.lastLogDate!, now);
+    final isFirstLogToday =
+        state.lastLogDate == null || !isSameDay(state.lastLogDate!, now);
+    print(isFirstLogToday);
     int pointsEarned = 0;
     List<String> newBadges = List.from(state.badges);
     int newStreak = isFirstLogToday ? _updateStreak(now) : state.streakCount;
 
     if (isFirstLogToday) {
-      pointsEarned = activityType == 'mood_log' ? 10 : 
-                     activityType == 'relaxation' ? 20 : 0;
+      pointsEarned = activityType == 'mood_log'
+          ? 10
+          : activityType == 'relaxation'
+              ? 20
+              : 0;
+      print('Analytics: $activityType logged at $now');
     }
 
     // Handle challenge progress
     if (challenge != null && challenge.isActive(now)) {
-      _challengeProgress[challenge.id] = (_challengeProgress[challenge.id] ?? 0) + 1;
+      _challengeProgress[challenge.id] =
+          (_challengeProgress[challenge.id] ?? 0) + 1;
       if (_challengeProgress[challenge.id]! >= challenge.goal) {
         pointsEarned += challenge.rewardPoints;
         newBadges.add('${challenge.title} Completed');
@@ -63,15 +72,23 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
     return 5 + ((points - 1000) ~/ 500);
   }
 
-  List<String> _awardBadges(int points, int streak, List<String> currentBadges, String activityType) {
+  List<String> _awardBadges(
+      int points, int streak, List<String> currentBadges, String activityType) {
     List<String> updatedBadges = List.from(currentBadges);
-    if (streak >= 3 && !updatedBadges.contains('StreakStarter')) updatedBadges.add('StreakStarter');
-    if (streak >= 7 && !updatedBadges.contains('StreakMaster')) updatedBadges.add('StreakMaster');
-    if (streak >= 14 && !updatedBadges.contains('StreakLegend')) updatedBadges.add('StreakLegend');
-    if (points >= 50 && !updatedBadges.contains('MoodBeginner')) updatedBadges.add('MoodBeginner');
-    if (points >= 200 && !updatedBadges.contains('MoodExplorer')) updatedBadges.add('MoodExplorer');
-    if (points >= 500 && !updatedBadges.contains('MoodChampion')) updatedBadges.add('MoodChampion');
-    if (activityType == 'relaxation' && !updatedBadges.contains('CalmSeeker')) updatedBadges.add('CalmSeeker');
+    if (streak >= 3 && !updatedBadges.contains('StreakStarter'))
+      updatedBadges.add('StreakStarter');
+    if (streak >= 7 && !updatedBadges.contains('StreakMaster'))
+      updatedBadges.add('StreakMaster');
+    if (streak >= 14 && !updatedBadges.contains('StreakLegend'))
+      updatedBadges.add('StreakLegend');
+    if (points >= 50 && !updatedBadges.contains('MoodBeginner'))
+      updatedBadges.add('MoodBeginner');
+    if (points >= 200 && !updatedBadges.contains('MoodExplorer'))
+      updatedBadges.add('MoodExplorer');
+    if (points >= 500 && !updatedBadges.contains('MoodChampion'))
+      updatedBadges.add('MoodChampion');
+    if (activityType == 'relaxation' && !updatedBadges.contains('CalmSeeker'))
+      updatedBadges.add('CalmSeeker');
     return updatedBadges;
   }
 
@@ -84,9 +101,12 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
     return 1;
   }
 
-  int getChallengeProgress(String challengeId) => _challengeProgress[challengeId] ?? 0;
+  int getChallengeProgress(String challengeId) =>
+      _challengeProgress[challengeId] ?? 0;
 }
 
 bool isSameDay(DateTime date1, DateTime date2) {
-  return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
+  return date1.year == date2.year &&
+      date1.month == date2.month &&
+      date1.day == date2.day;
 }

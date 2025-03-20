@@ -1,4 +1,3 @@
-// 2. widgets/journal_editor.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/providers/journal_provider.dart';
@@ -17,12 +16,11 @@ class JournalEditor extends ConsumerStatefulWidget {
 }
 
 class _JournalEditorState extends ConsumerState<JournalEditor> {
-  late final _titleController =
-      TextEditingController(text: widget.entry?.title ?? '');
-  late final _contentController =
-      TextEditingController(text: widget.entry?.content ?? '');
+  late final _titleController = TextEditingController(text: widget.entry?.title ?? '');
+  late final _contentController = TextEditingController(text: widget.entry?.content ?? '');
   late bool _isBold = widget.entry?.isBold ?? false;
   late bool _isItalic = widget.entry?.isItalic ?? false;
+  late int? _moodIndex = widget.entry?.moodIndex; // Added mood index
   bool _showTitle = true;
   DateTime _lastSave = DateTime.now();
   late DateTime _selectedDate = widget.entry?.date ?? DateTime.now();
@@ -40,13 +38,12 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
         date: _selectedDate,
         title: _titleController.text,
         content: _contentController.text,
+        moodIndex: _moodIndex, // Include mood index
         isBold: _isBold,
         isItalic: _isItalic,
       );
       if (widget.entry != null) {
-        ref
-            .read(journalProvider.notifier)
-            .updateEntry(widget.entry!, updatedEntry);
+        ref.read(journalProvider.notifier).updateEntry(widget.entry!, updatedEntry);
       } else {
         ref.read(journalProvider.notifier).saveEntry(updatedEntry);
       }
@@ -200,8 +197,7 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
                               .textTheme
                               .titleLarge
                               ?.copyWith(
-                                color:
-                                    injector.palette.textColor.withOpacity(0.5),
+                                color: injector.palette.textColor.withOpacity(0.5),
                               ),
                           border: InputBorder.none,
                         ),
@@ -211,10 +207,8 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
                       controller: _contentController,
                       maxLines: null,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight:
-                                _isBold ? FontWeight.bold : FontWeight.normal,
-                            fontStyle:
-                                _isItalic ? FontStyle.italic : FontStyle.normal,
+                            fontWeight: _isBold ? FontWeight.bold : FontWeight.normal,
+                            fontStyle: _isItalic ? FontStyle.italic : FontStyle.normal,
                             color: injector.palette.textColor,
                           ),
                       decoration: InputDecoration(
@@ -223,10 +217,29 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
                             .textTheme
                             .bodyLarge
                             ?.copyWith(
-                              color:
-                                  injector.palette.textColor.withOpacity(0.5),
+                              color: injector.palette.textColor.withOpacity(0.5),
                             ),
                         border: InputBorder.none,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    // Mood Picker
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(
+                        5,
+                        (index) => GestureDetector(
+                          onTap: () => setState(() => _moodIndex = index),
+                          child: Text(
+                            ['😢', '😐', '😊', '😄', '🌟'][index],
+                            style: TextStyle(
+                              fontSize: 32,
+                              color: _moodIndex == index
+                                  ? injector.palette.primaryColor
+                                  : injector.palette.textColor.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],

@@ -24,7 +24,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3, // Increment to 3 for journals
+      version: 4, // Increment to 4
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE user_progress (
@@ -33,6 +33,8 @@ class DatabaseHelper {
           totalPoints INTEGER,
           level INTEGER,
           badges TEXT,
+          lastMoodLogDate TEXT,
+          lastRelaxationLogDate TEXT,
           lastLogDate TEXT
         )
         ''');
@@ -77,10 +79,13 @@ class DatabaseHelper {
           )
           ''');
         }
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE user_progress ADD COLUMN lastMoodLogDate TEXT');
+          await db.execute('ALTER TABLE user_progress ADD COLUMN lastRelaxationLogDate TEXT');
+        }
       },
       onOpen: (db) async {
-        final count = Sqflite.firstIntValue(
-            await db.rawQuery('SELECT COUNT(*) FROM user_progress'));
+        final count = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM user_progress'));
         if (count == 0) {
           await db.insert('user_progress', UserProgress().toMap());
         }

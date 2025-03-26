@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/providers/gamification/gamification_provider.dart';
-import 'package:mindful_mate/providers/mood_tracker_provider.dart';
 import 'package:mindful_mate/screens/relaxations/model/relaxation.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 
@@ -13,7 +12,7 @@ class RelaxationScreen extends ConsumerWidget {
       description: 'Inhale for 4s, hold for 4s, exhale for 4s. Repeat 5 times.',
       duration: Duration(minutes: 2),
     ),
-    RelaxationExercise(
+   RelaxationExercise(
       id: 'mindfulness',
       title: 'Mindfulness Moment',
       description: 'Focus on your breath for 5 minutes, letting thoughts pass.',
@@ -21,25 +20,33 @@ class RelaxationScreen extends ConsumerWidget {
     ),
   ];
 
+  final String? suggestedExerciseId;
+
+  const RelaxationScreen({this.suggestedExerciseId, super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = injector.palette;
-    final moodInsight = ref.getMoodInsight(ref.watch(currentDisplayedWeekProvider), ref.watch(calendarViewProvider));
-    final suggestedExercise = moodInsight.contains('relaxation') ? exercises[0] : null;
 
     return Scaffold(
       appBar: AppBar(title: Text('Relaxation', style: TextStyle(color: palette.textColor))),
       body: ListView(
         children: [
-          if (suggestedExercise != null) ...[
+          if (suggestedExerciseId != null) ...[
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text('Suggested: ${suggestedExercise.title}', style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                'Suggested: ${_getExerciseById(suggestedExerciseId)?.title ?? "Unknown"}',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: palette.primaryColor),
+              ),
             ),
           ],
           ...exercises.map((exercise) => ListTile(
             title: Text(exercise.title),
             subtitle: Text('${exercise.duration.inMinutes} min'),
+            trailing: suggestedExerciseId == exercise.id
+                ? Icon(Icons.star, color: palette.accentColor)
+                : null,
             onTap: () => _startRelaxation(context, ref, exercise),
           )),
         ],
@@ -56,14 +63,28 @@ class RelaxationScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () {
-              ref.read(gamificationProvider.notifier).logActivity(activityType: 'relaxation');
+              final pointsAwarded = ref.read(gamificationProvider.notifier).logActivity(
+                activityType: 'relaxation',
+                suggestedRelaxation: suggestedExerciseId,
+                completedRelaxation: exercise.id,
+              );
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Relaxation completed! +20 points')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Relaxation completed! ${pointsAwarded > 0 ? "+$pointsAwarded points" : "No points (not suggested)"}',
+                  ),
+                ),
+              );
             },
-            child: Text('Complete'),
+            child: const Text('Complete'),
           ),
         ],
       ),
     );
+  }
+
+  RelaxationExercise? _getExerciseById(String? id) {
+    return exercises.firstWhere((e) => e.id == id, orElse: () => exercises[0]);
   }
 }

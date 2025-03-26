@@ -15,8 +15,8 @@ extension MoodAnalysis on WidgetRef {
   if (moods.isEmpty) return "Start tracking your mood to see insights! 🌱";
 
   final filteredData = viewMode == CalendarViewMode.weekly
-      ? _filterWeeklyData(moods, baseDate)
-      : _filterMonthlyData(moods, baseDate);
+      ? filterWeeklyData(moods, baseDate)
+      : filterMonthlyData(moods, baseDate);
 
   if (filteredData.isEmpty) {
     return viewMode == CalendarViewMode.weekly
@@ -97,7 +97,7 @@ extension MoodAnalysis on WidgetRef {
       ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][weekday - 1];
   String _moodEmoji(int rating) => ['😢', '😐', '😊', '😄', '🌟'][rating];
 
-Map<DateTime, int> _filterWeeklyData(Map<DateTime, MoodEntry> moods, DateTime baseDate) {
+Map<DateTime, int> filterWeeklyData(Map<DateTime, MoodEntry> moods, DateTime baseDate) {
   final start = baseDate.subtract(Duration(days: baseDate.weekday % 7));
   final end = start.add(const Duration(days: 6));
   return Map.fromEntries(
@@ -107,7 +107,7 @@ Map<DateTime, int> _filterWeeklyData(Map<DateTime, MoodEntry> moods, DateTime ba
   );
 }
 
-Map<DateTime, int> _filterMonthlyData(Map<DateTime, MoodEntry> moods, DateTime baseDate) {
+Map<DateTime, int> filterMonthlyData(Map<DateTime, MoodEntry> moods, DateTime baseDate) {
   final start = DateTime(baseDate.year, baseDate.month, 1);
   final end = DateTime(baseDate.year, baseDate.month + 1, 0);
   return Map.fromEntries(

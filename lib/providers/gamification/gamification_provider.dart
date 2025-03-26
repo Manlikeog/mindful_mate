@@ -19,13 +19,17 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
     state = await _dbHelper.getUserProgress();
   }
 
-  void logActivity({required String activityType, Challenge? challenge}) {
+  int logActivity({
+    required String activityType,
+    Challenge? challenge,
+    String? suggestedRelaxation, // New: Suggested exercise ID
+    String? completedRelaxation, // New: Completed exercise ID
+  }) {
     final now = DateTime.now();
     int pointsEarned = 0;
     List<String> newBadges = List.from(state.badges);
-    int newStreak = _updateStreak(now); // Streak updates on any activity
+    int newStreak = _updateStreak(now);
 
-    // Check if activity is first of its type today
     final isFirstMoodLogToday = state.lastMoodLogDate == null || !isSameDay(state.lastMoodLogDate!, now);
     final isFirstRelaxationToday = state.lastRelaxationLogDate == null || !isSameDay(state.lastRelaxationLogDate!, now);
 
@@ -35,10 +39,14 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
       print('Analytics: Mood logged at $now - 10 points');
     }
 
-    // Award points for relaxation
+    // Award points for relaxation only if it matches the suggestion
     if (activityType == 'relaxation' && isFirstRelaxationToday) {
-      pointsEarned += 20;
-      print('Analytics: Relaxation logged at $now - 20 points');
+      if (suggestedRelaxation != null && suggestedRelaxation == completedRelaxation) {
+        pointsEarned += 20;
+        print('Analytics: Suggested Relaxation ($completedRelaxation) logged at $now - 20 points');
+      } else {
+        print('Analytics: Relaxation ($completedRelaxation) logged at $now - No points (not suggested)');
+      }
     }
 
     // Handle challenge progress
@@ -55,7 +63,6 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
     int newLevel = _calculateLevel(newPoints);
     newBadges = _awardBadges(newPoints, newStreak, newBadges, activityType);
 
-    // Update state with new dates
     state = UserProgress(
       streakCount: newStreak,
       totalPoints: newPoints,
@@ -63,9 +70,10 @@ class GamificationNotifier extends StateNotifier<UserProgress> {
       badges: newBadges,
       lastMoodLogDate: activityType == 'mood_log' ? now : state.lastMoodLogDate,
       lastRelaxationLogDate: activityType == 'relaxation' ? now : state.lastRelaxationLogDate,
-      lastLogDate: now, // Keep for streak
+      lastLogDate: now,
     );
     _dbHelper.updateUserProgress(state);
+    return pointsEarned; // Return points for feedback
   }
 
   int _calculateLevel(int points) {

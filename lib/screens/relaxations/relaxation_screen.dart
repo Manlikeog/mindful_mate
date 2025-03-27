@@ -2,27 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/providers/gamification/gamification_provider.dart';
 import 'package:mindful_mate/providers/gamification/user_progress.dart';
+import 'package:mindful_mate/screens/chanllenges/model/chanllenge.dart'; // For levelRelaxations
 import 'package:mindful_mate/screens/relaxations/model/relaxation.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 
 class RelaxationScreen extends ConsumerWidget {
-  static List<RelaxationExercise> exercises = [
-    RelaxationExercise(
-      id: 'deep_breathing',
-      title: 'Deep Breathing',
-      description: 'Inhale for 4s, hold for 4s, exhale for 4s. Repeat 5 times.',
-      duration: Duration(minutes: 2),
-      icon: Icons.air,
-    ),
-    RelaxationExercise(
-      id: 'mindfulness',
-      title: 'Mindfulness Moment',
-      description: 'Focus on your breath for 5 minutes, letting thoughts pass.',
-      duration: Duration(minutes: 5),
-      icon: Icons.self_improvement,
-    ),
-  ];
-
   final String? suggestedExerciseId;
 
   const RelaxationScreen({this.suggestedExerciseId, super.key});
@@ -31,16 +15,18 @@ class RelaxationScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = injector.palette;
     final progress = ref.watch(gamificationProvider);
+    final currentLevel = progress.level;
+    final levelExercises = levelRelaxations[currentLevel] ?? [];
 
-    final suggestedExercise = exercises.firstWhere(
+    final suggestedExercise = levelExercises.firstWhere(
       (e) => e.id == suggestedExerciseId,
-      orElse: () => exercises[0],
+      orElse: () => levelExercises.isNotEmpty ? levelExercises[0] : Relaxation(id: 'default', title: 'No Exercise', level: currentLevel),
     );
-    final otherExercises = exercises.where((e) => e.id != suggestedExerciseId).toList();
+    final otherExercises = levelExercises.where((e) => e.id != suggestedExerciseId).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Relaxation', style: TextStyle(color: palette.textColor)),
+        title: Text('Level $currentLevel Relaxation', style: TextStyle(color: palette.textColor)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -59,7 +45,7 @@ class RelaxationScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Text(
-                  'Suggested Relaxation',
+                  'Suggested Relaxation (5-Point Booster)',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: palette.primaryColor,
                         fontWeight: FontWeight.bold,
@@ -89,7 +75,7 @@ class RelaxationScreen extends ConsumerWidget {
   Widget _buildRelaxationCard(
     BuildContext context,
     WidgetRef ref,
-    RelaxationExercise exercise,
+    Relaxation exercise,
     bool isSuggested,
     UserProgress progress,
   ) {
@@ -122,12 +108,12 @@ class RelaxationScreen extends ConsumerWidget {
           child: Column(
             children: [
               ListTile(
-                leading: Icon(exercise.icon, color: palette.primaryColor, size: 32),
+                leading: Icon(Icons.self_improvement, color: palette.primaryColor, size: 32), // Generic icon for now
                 title: Text(
                   exercise.title,
                   style: TextStyle(fontWeight: FontWeight.bold, color: palette.textColor),
                 ),
-                subtitle: Text('${exercise.duration.inMinutes} min', style: TextStyle(color: palette.textColor.withOpacity(0.7))),
+                subtitle: Text('Level ${exercise.level}', style: TextStyle(color: palette.textColor.withOpacity(0.7))),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -160,7 +146,7 @@ class RelaxationScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        exercise.description,
+                        'Complete this to progress your relaxation challenge${isSuggested ? " and earn a 5-point booster" : ""}!',
                         style: TextStyle(color: palette.textColor.withOpacity(0.8)),
                       ),
                       const SizedBox(height: 12),
@@ -168,7 +154,9 @@ class RelaxationScreen extends ConsumerWidget {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 500),
                           child: ElevatedButton(
-                            onPressed: () => _completeRelaxation(context, ref, exercise),
+                            onPressed: isCompletedToday
+                                ? null
+                                : () => _completeRelaxation(context, ref, exercise, isSuggested),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isSuggested ? Colors.purple.shade600 : palette.primaryColor,
                               foregroundColor: Colors.white,
@@ -178,8 +166,8 @@ class RelaxationScreen extends ConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('Start'),
-                                if (isSuggested) ...[
+                                Text(isCompletedToday ? 'Done Today' : 'Start'),
+                                if (isSuggested && !isCompletedToday) ...[
                                   const SizedBox(width: 8),
                                   AnimatedScale(
                                     scale: isSuggested ? 1.1 : 1.0,
@@ -206,16 +194,21 @@ class RelaxationScreen extends ConsumerWidget {
     );
   }
 
-  void _completeRelaxation(BuildContext context, WidgetRef ref, RelaxationExercise exercise) {
-    final pointsAwarded = ref.read(gamificationProvider.notifier).logActivity(
+  void _completeRelaxation(BuildContext context, WidgetRef ref, Relaxation exercise, bool isSuggested) {
+    ref.read(gamificationProvider.notifier).logActivity(
       activityType: 'relaxation',
-      suggestedRelaxation: suggestedExerciseId,
+      suggestedRelaxation: isSuggested ? exercise.id : null,
       completedRelaxation: exercise.id,
     );
+    final progress = ref.read(gamificationProvider);
+    final pointsAwarded = isSuggested && progress.completedRelaxations[exercise.id] != null &&
+            isSameDay(progress.completedRelaxations[exercise.id]!, DateTime.now())
+        ? 5
+        : 0; // Only show booster points in feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Relaxation completed! ${pointsAwarded > 0 ? "+$pointsAwarded points" : "No points (not suggested or already done)"}',
+          'Relaxation completed! ${pointsAwarded > 0 ? "+$pointsAwarded booster points" : "Check your challenge progress!"}',
         ),
         backgroundColor: pointsAwarded > 0 ? Colors.green : Colors.grey,
       ),
@@ -223,7 +216,6 @@ class RelaxationScreen extends ConsumerWidget {
   }
 }
 
-// Provider to track expansion state for each card
 final _expansionProvider = StateProvider.family<bool, String>((ref, id) => false);
 
 bool isSameDay(DateTime date1, DateTime date2) {

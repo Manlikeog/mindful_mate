@@ -9,9 +9,12 @@ class ChallengeCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progress = ref.watch(gamificationProvider); // Watch state, not notifier
+    final progress = ref.watch(gamificationProvider);
+    final currentLevel = progress.level;
+    final challenges = levelChallenges[currentLevel] ?? [];
     final now = DateTime.now();
-    final activeChallenges = ChallengesScreen.challenges.where((challenge) => challenge.isActive(now)).toList();
+    final activeChallenges = challenges.where((c) => c.isActive(now)).toList();
+    final levelTotalPoints = levelPoints[currentLevel] ?? 0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -20,9 +23,7 @@ class ChallengeCard extends ConsumerWidget {
         child: Card(
           key: ValueKey(activeChallenges.hashCode),
           elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -46,7 +47,7 @@ class ChallengeCard extends ConsumerWidget {
                     Icon(Icons.star, color: Colors.orange.shade600),
                     const SizedBox(width: 12),
                     Text(
-                      'Your Challenges',
+                      'Level $currentLevel Challenges',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -58,16 +59,13 @@ class ChallengeCard extends ConsumerWidget {
                 const SizedBox(height: 16),
                 if (activeChallenges.isEmpty)
                   Text(
-                    'No active challenges right now. Check back soon! 🌟',
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.4,
-                      color: Colors.black87,
-                    ),
+                    'No active challenges for Level $currentLevel. Level up soon! 🌟',
+                    style: TextStyle(fontSize: 16, height: 1.4, color: Colors.black87),
                   )
                 else
                   ...activeChallenges.map((challenge) {
                     final challengeProgress = progress.challengeProgress[challenge.id] ?? 0;
+                    final isCompleted = progress.completedChallenges.contains(challenge.id);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: Row(
@@ -86,24 +84,22 @@ class ChallengeCard extends ConsumerWidget {
                                 ),
                                 Text(
                                   '$challengeProgress/${challenge.goal} - ${challenge.description}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                  ),
+                                  style: TextStyle(fontSize: 14, color: Colors.black54),
                                 ),
                               ],
                             ),
                           ),
-                          if (challengeProgress >= challenge.goal)
-                            Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 20,
-                            ),
+                          if (isCompleted)
+                            Icon(Icons.check_circle, color: Colors.green, size: 20),
                         ],
                       ),
                     );
                   }),
+                const SizedBox(height: 16),
+                Text(
+                  'Progress: ${progress.totalPoints}/$levelTotalPoints',
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {

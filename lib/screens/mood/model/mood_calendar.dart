@@ -64,7 +64,6 @@ class MoodCalendar extends ConsumerWidget {
           ),
           calendarBuilders: CalendarBuilders(
             markerBuilder: (context, date, _) {
-              // Normalize the date to only year, month, day
               final normalizedDate = DateTime(date.year, date.month, date.day);
               final moodEntry = moods[normalizedDate];
               if (moodEntry != null) {
@@ -115,8 +114,7 @@ class MoodCalendar extends ConsumerWidget {
   void _showMoodPicker(BuildContext context, WidgetRef ref, DateTime day) {
     final moods = ref.read(moodProvider);
     final isToday = isSameDay(day, DateTime.now());
-    final existingMood =
-        moods[DateTime(day.year, day.month, day.day)]; // Normalize here too
+    final existingMood = moods[DateTime(day.year, day.month, day.day)];
 
     if (!isToday && existingMood != null) {
       showDialog(
@@ -182,6 +180,12 @@ class MoodCalendar extends ConsumerWidget {
                                     .read(gamificationProvider.notifier)
                                     .logActivity(activityType: 'mood_log');
                                 if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Mood logged! Check your challenge progress.'),
+                                      backgroundColor: Colors.grey,
+                                    ),
+                                  );
                                   (context.findAncestorStateOfType<
                                           MoodTrackerScreenState>())
                                       ?.showRewardAnimation();
@@ -204,6 +208,12 @@ class MoodCalendar extends ConsumerWidget {
                                     .read(gamificationProvider.notifier)
                                     .logActivity(activityType: 'mood_log');
                                 if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Mood logged! Check your challenge progress.'),
+                                      backgroundColor: Colors.grey,
+                                    ),
+                                  );
                                   (context.findAncestorStateOfType<
                                           MoodTrackerScreenState>())
                                       ?.showRewardAnimation();

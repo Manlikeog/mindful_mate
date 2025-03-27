@@ -10,7 +10,7 @@ class UserProgress {
   final DateTime? lastLogDate;
   final Map<String, DateTime> completedRelaxations;
   final Map<String, int> challengeProgress;
-  final List<String> completedChallenges; // Track completed challenge IDs
+  final List<String> completedChallenges;
 
   UserProgress({
     this.streakCount = 0,

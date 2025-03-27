@@ -34,39 +34,47 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
   }
 
   void _saveEntry() {
-    if (_contentController.text.trim().isNotEmpty) {
-      final updatedEntry = JournalEntry(
-        date: _selectedDate,
-        title: _titleController.text,
-        content: _contentController.text,
-        moodIndex: _moodIndex,
-        isBold: _isBold,
-        isItalic: _isItalic,
-      );
-      if (widget.entry != null) {
-        ref.read(journalProvider.notifier).updateEntry(widget.entry!, updatedEntry);
-      } else {
-        ref.read(journalProvider.notifier).saveEntry(updatedEntry);
-        ref.read(gamificationProvider.notifier).logActivity(activityType: 'journal'); // Log new journal entry
-      }
-      setState(() => _lastSave = DateTime.now());
-      Navigator.pop(context);
+  if (_contentController.text.trim().isNotEmpty) {
+    final updatedEntry = JournalEntry(
+      date: _selectedDate,
+      title: _titleController.text,
+      content: _contentController.text,
+      moodIndex: _moodIndex,
+      isBold: _isBold,
+      isItalic: _isItalic,
+    );
+    if (widget.entry != null) {
+      ref.read(journalProvider.notifier).updateEntry(widget.entry!, updatedEntry);
     } else {
-      ScaffoldMessenger.of(context).clearSnackBars();
+      ref.read(journalProvider.notifier).saveEntry(updatedEntry);
+      ref.read(gamificationProvider.notifier).logActivity(activityType: 'journal');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Please enter some content before saving.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: injector.palette.pureWhite,
-                ),
-          ),
-          backgroundColor: injector.palette.accentColor,
-          duration: Duration(seconds: 2),
+          content: Text('Journal saved! Check your challenge progress.'),
+          backgroundColor: Colors.grey,
         ),
       );
     }
+    setState(() => _lastSave = DateTime.now());
+    Navigator.pop(context);
+  } 
+  
+  else {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Please enter some content before saving.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: injector.palette.pureWhite,
+              ),
+        ),
+        backgroundColor: injector.palette.accentColor,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
+}
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(

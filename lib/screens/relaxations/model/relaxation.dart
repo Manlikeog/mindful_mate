@@ -1,16 +1,17 @@
-// lib/models/relaxation.dart
+import 'package:flutter/material.dart';
+
 class RelaxationExercise {
   final String id;
   final String title;
   final String description;
   final Duration duration;
-  final String? audioUrl; // Optional for future audio integration
+  final IconData icon; // New field
 
-  RelaxationExercise({
+  const RelaxationExercise({
     required this.id,
     required this.title,
     required this.description,
     required this.duration,
-    this.audioUrl,
+    required this.icon,
   });
 }

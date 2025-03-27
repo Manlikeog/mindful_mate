@@ -1,4 +1,3 @@
-// 3. screens/journal_screen.dart
 import 'dart:async';
 import 'dart:ui';
 import 'package:intl/intl.dart';
@@ -202,7 +201,7 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.85, // Adjusted for better card appearance
+        childAspectRatio: 0.85,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
       ),

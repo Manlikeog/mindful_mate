@@ -24,7 +24,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4, // Increment to 4
+      version: 7, // Increment to 7
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE user_progress (
@@ -35,7 +35,10 @@ class DatabaseHelper {
           badges TEXT,
           lastMoodLogDate TEXT,
           lastRelaxationLogDate TEXT,
-          lastLogDate TEXT
+          lastLogDate TEXT,
+          completedRelaxations TEXT,
+          challengeProgress TEXT,
+          completedChallenges TEXT
         )
         ''');
         await db.execute('''
@@ -56,6 +59,7 @@ class DatabaseHelper {
         )
         ''');
         await db.insert('user_progress', UserProgress().toMap());
+        print('Database created and initial user_progress row inserted');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -83,11 +87,22 @@ class DatabaseHelper {
           await db.execute('ALTER TABLE user_progress ADD COLUMN lastMoodLogDate TEXT');
           await db.execute('ALTER TABLE user_progress ADD COLUMN lastRelaxationLogDate TEXT');
         }
+        if (oldVersion < 5) {
+          await db.execute('ALTER TABLE user_progress ADD COLUMN completedRelaxations TEXT');
+        }
+        if (oldVersion < 6) {
+          await db.execute('ALTER TABLE user_progress ADD COLUMN challengeProgress TEXT');
+        }
+        if (oldVersion < 7) {
+          await db.execute('ALTER TABLE user_progress ADD COLUMN completedChallenges TEXT');
+          print('Added completedChallenges column to user_progress');
+        }
       },
       onOpen: (db) async {
         final count = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM user_progress'));
         if (count == 0) {
           await db.insert('user_progress', UserProgress().toMap());
+          print('Inserted initial user_progress row on open');
         }
       },
     );
@@ -96,13 +111,31 @@ class DatabaseHelper {
   Future<UserProgress> getUserProgress() async {
     final db = await database;
     final result = await db.query('user_progress', limit: 1);
-    return UserProgress.fromMap(result.first);
+    if (result.isEmpty) {
+      final defaultProgress = UserProgress();
+      await db.insert('user_progress', defaultProgress.toMap());
+      print('No progress found, inserted default: ${defaultProgress.toMap()}');
+      return defaultProgress;
+    }
+    final progress = UserProgress.fromMap(result.first);
+    print('Fetched progress from DB: ${progress.toMap()}');
+    return progress;
   }
 
   Future<void> updateUserProgress(UserProgress progress) async {
     final db = await database;
-    await db.update('user_progress', progress.toMap(),
-        where: 'id = ?', whereArgs: [1]);
+    final rowsAffected = await db.update(
+      'user_progress',
+      progress.toMap(),
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+    if (rowsAffected == 0) {
+      await db.insert('user_progress', progress.toMap());
+      print('No rows updated, inserted progress: ${progress.toMap()}');
+    } else {
+      print('Updated progress in DB: ${progress.toMap()}');
+    }
   }
 
   Future<List<MoodEntry>> getMoodEntries() async {

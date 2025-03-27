@@ -1,15 +1,14 @@
-// lib/models/challenge.dart
 class Challenge {
   final String id;
   final String title;
   final String description;
-  final int goal; // e.g., 5 mood logs
-  final String type; // 'mood_log', 'relaxation'
+  final int goal;
+  final String type; // mood_log, relaxation, journal
   final int rewardPoints;
   final DateTime startDate;
   final DateTime endDate;
 
-  Challenge({
+  const Challenge({
     required this.id,
     required this.title,
     required this.description,
@@ -20,5 +19,7 @@ class Challenge {
     required this.endDate,
   });
 
-  bool isActive(DateTime now) => now.isAfter(startDate) && now.isBefore(endDate);
+  bool isActive(DateTime now) {
+    return now.isAfter(startDate) && now.isBefore(endDate.add(const Duration(days: 1)));
+  }
 }

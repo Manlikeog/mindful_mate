@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:mindful_mate/providers/gamification/user_progress.dart';
 import 'package:mindful_mate/providers/home/mood_provider.dart';
-import 'package:mindful_mate/providers/mood_tracker_provider.dart'; // Imports extension methods
+import 'package:mindful_mate/providers/mood_tracker_provider.dart';
 import 'package:mindful_mate/screens/relaxations/relaxation_screen.dart';
+import 'package:mindful_mate/providers/gamification/gamification_provider.dart'; // Add this import
 
 class InsightsCard extends ConsumerWidget {
   const InsightsCard({super.key});
@@ -12,10 +14,10 @@ class InsightsCard extends ConsumerWidget {
     final moods = ref.watch(moodProvider);
     final currentWeekStart = ref.watch(currentDisplayedWeekProvider);
     final viewMode = ref.watch(calendarViewProvider);
+    final progress = ref.watch(gamificationProvider); // Watch gamification state
 
-    // Use extension methods directly on ref
     final insight = ref.getMoodInsight(currentWeekStart, viewMode);
-    final suggestedExercise = _getRelaxationSuggestion(ref, currentWeekStart, viewMode);
+    final suggestedExercise = _getRelaxationSuggestion(ref);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -83,12 +85,23 @@ class InsightsCard extends ConsumerWidget {
                 ),
                 if (suggestedExercise != null) ...[
                   const SizedBox(height: 16),
-                  Text(
-                    'Suggested Relaxation: $suggestedExercise',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.purple.shade600,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'Suggested Relaxation: $suggestedExercise',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.purple.shade600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (_isSuggestedCompletedToday(suggestedExercise, progress))
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 20,
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton(
@@ -115,24 +128,29 @@ class InsightsCard extends ConsumerWidget {
     );
   }
 
-  String? _getRelaxationSuggestion(WidgetRef ref, DateTime baseDate, CalendarViewMode viewMode) {
+  String? _getRelaxationSuggestion(WidgetRef ref) {
     final moods = ref.watch(moodProvider);
-    final filteredData = viewMode == CalendarViewMode.weekly
-        ? ref.filterWeeklyData(moods, baseDate)
-        : ref.filterMonthlyData(moods, baseDate);
+    final recentMoods = moods.entries
+        .where((e) => e.key.isAfter(DateTime.now().subtract(const Duration(days: 2))))
+        .toList();
 
-    if (filteredData.isEmpty) return null;
+    if (recentMoods.isEmpty) return null;
 
-    final entries = filteredData.entries.toList();
-    final averageMood = entries.map((e) => e.value.toDouble()).reduce((a, b) => a + b) / entries.length;
+    final averageRecentMood = recentMoods
+        .map((e) => e.value.moodRating.toDouble())
+        .reduce((a, b) => a + b) / recentMoods.length;
 
-    // Suggest relaxation based on mood
-    if (averageMood < 1.5) {
-      return 'deep_breathing'; // Matches RelaxationExercise id
-    } else if (averageMood < 2.5) {
-      return 'mindfulness'; // Matches RelaxationExercise id
+    if (averageRecentMood < 1.5) {
+      return 'deep_breathing';
+    } else if (averageRecentMood < 2.5) {
+      return 'mindfulness';
     }
-    return null; // No suggestion for high mood
+    return null;
+  }
+
+  bool _isSuggestedCompletedToday(String suggestedExercise, UserProgress progress) {
+    final lastCompletion = progress.completedRelaxations[suggestedExercise];
+    return lastCompletion != null && _isSameDay(lastCompletion, DateTime.now());
   }
 
   String _getFormattedDateRange(DateTime startDate) {
@@ -146,5 +164,9 @@ class InsightsCard extends ConsumerWidget {
 
   String _monthAbbreviation(int month) {
     return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month - 1];
+  }
+
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year && date1.month == date2.month && date1.day == date2.day;
   }
 }

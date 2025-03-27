@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/providers/journal_provider.dart';
+import 'package:mindful_mate/providers/gamification/gamification_provider.dart'; // Add this import
 import 'package:intl/intl.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/extension/widget_extension.dart';
@@ -20,7 +21,7 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
   late final _contentController = TextEditingController(text: widget.entry?.content ?? '');
   late bool _isBold = widget.entry?.isBold ?? false;
   late bool _isItalic = widget.entry?.isItalic ?? false;
-  late int? _moodIndex = widget.entry?.moodIndex; // Added mood index
+  late int? _moodIndex = widget.entry?.moodIndex;
   bool _showTitle = true;
   DateTime _lastSave = DateTime.now();
   late DateTime _selectedDate = widget.entry?.date ?? DateTime.now();
@@ -38,7 +39,7 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
         date: _selectedDate,
         title: _titleController.text,
         content: _contentController.text,
-        moodIndex: _moodIndex, // Include mood index
+        moodIndex: _moodIndex,
         isBold: _isBold,
         isItalic: _isItalic,
       );
@@ -46,6 +47,7 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
         ref.read(journalProvider.notifier).updateEntry(widget.entry!, updatedEntry);
       } else {
         ref.read(journalProvider.notifier).saveEntry(updatedEntry);
+        ref.read(gamificationProvider.notifier).logActivity(activityType: 'journal'); // Log new journal entry
       }
       setState(() => _lastSave = DateTime.now());
       Navigator.pop(context);
@@ -104,7 +106,6 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
       backgroundColor: injector.palette.pureWhite,
       body: Column(
         children: [
-          // Toolbar
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -164,7 +165,6 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
               ],
             ),
           ),
-          // Prompt (if new entry)
           if (widget.entry == null && widget.prompt.isNotEmpty)
             Padding(
               padding: EdgeInsets.all(16),
@@ -177,7 +177,6 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
                 textAlign: TextAlign.center,
               ),
             ),
-          // Editor Fields
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
@@ -223,7 +222,6 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    // Mood Picker
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: List.generate(
@@ -247,7 +245,6 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
               ),
             ),
           ),
-          // Bottom Bar
           Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(

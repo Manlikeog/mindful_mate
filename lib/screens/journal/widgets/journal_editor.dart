@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mindful_mate/data/model/journal/journal_entry.dart';
 import 'package:mindful_mate/providers/journal_provider.dart';
-import 'package:mindful_mate/providers/gamification/gamification_provider.dart'; // Add this import
 import 'package:intl/intl.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
-import 'package:mindful_mate/utils/extension/widget_extension.dart';
 
 class JournalEditor extends ConsumerStatefulWidget {
   final String prompt;
@@ -35,25 +34,20 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
 
   void _saveEntry() {
   if (_contentController.text.trim().isNotEmpty) {
-    final updatedEntry = JournalEntry(
-      date: _selectedDate,
-      title: _titleController.text,
-      content: _contentController.text,
-      moodIndex: _moodIndex,
-      isBold: _isBold,
-      isItalic: _isItalic,
-    );
+   final updatedEntry = ref.read(journalControllerProvider).createNewEntry(
+                date: DateTime.now(),
+                title: _titleController.text,
+                content: _contentController.text,
+                isBold: _isBold,
+                isItalic: _isItalic,
+                moodIndex: _moodIndex,
+              );
     if (widget.entry != null) {
-      ref.read(journalProvider.notifier).updateEntry(widget.entry!, updatedEntry);
+      ref.read(journalProvider.notifier).updateEntry(context, widget.entry!, updatedEntry);
     } else {
-      ref.read(journalProvider.notifier).saveEntry(updatedEntry);
-      ref.read(gamificationProvider.notifier).logActivity(activityType: 'journal');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Journal saved! Check your challenge progress.'),
-          backgroundColor: Colors.grey,
-        ),
-      );
+      ref.read(journalProvider.notifier).saveEntry(context, updatedEntry);
+      // ref.read(gamificationProvider.notifier).logActivity(activityType: 'journal');
+      
     }
     setState(() => _lastSave = DateTime.now());
     Navigator.pop(context);

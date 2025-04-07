@@ -7,15 +7,11 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:mindful_mate/providers/system_setup/theme_data_provider.dart';
-import 'package:mindful_mate/screens/journal/journal_screen.dart';
-import 'package:mindful_mate/screens/mood/mood_screen.dart';
 import 'package:mindful_mate/screens/onboarding/onboarding_screen.dart';
 import 'package:mindful_mate/utils/app_settings/images_strings.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 import 'package:mindful_mate/utils/local_keys.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -87,7 +83,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    ThemeMode themeMode = ref.watch(getTheThemeData);
     return Scaffold(
       backgroundColor: injector.palette.primaryColor,
       body: Center(
@@ -107,7 +102,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               duration: const Duration(milliseconds: 1000),
               opacity: 1.0,
               child: Text(
-                AppLocalizations.of(context)!.mindfulMate,
+               "MindfulMate",
                 style: GoogleFonts.poppins(
                   color: injector.palette.pureWhite,
                   fontSize: 32,
@@ -120,9 +115,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               valueColor:
                   AlwaysStoppedAnimation<Color>(injector.palette.accentColor),
               strokeWidth: 2.ww(context),
-              backgroundColor: (themeMode == ThemeMode.dark)
-                  ? injector.palette.pureWhite
-                  : injector.palette.accentColor,
+              
             ),
           ],
         ),

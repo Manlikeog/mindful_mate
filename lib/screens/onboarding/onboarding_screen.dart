@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lottie/lottie.dart'; // Added for animations
-import 'package:mindful_mate/providers/system_setup/theme_data_provider.dart';
 import 'package:mindful_mate/screens/home/home_screen.dart';
-import 'package:mindful_mate/screens/mood/mood_screen.dart';
-import 'package:mindful_mate/screens/onboarding/model/onboarding_bottom_controls.dart';
-import 'package:mindful_mate/screens/onboarding/model/onboarding_page.dart';
+import 'package:mindful_mate/screens/onboarding/widgets/onboarding_bottom_controls.dart';
+import 'package:mindful_mate/screens/onboarding/widgets/onboarding_page.dart';
 import 'package:mindful_mate/utils/app_settings/images_strings.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
@@ -49,13 +46,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     final currentPage = useState<int>(0);
-    final palette = injector.palette;
-    final themeMode = ref.watch(getTheThemeData);
+
 
     final onboardingList = [
       OnboardingPage(
-        title: AppLocalizations.of(context)!.onboardingOneTitle,
-        description: AppLocalizations.of(context)!.onboardingOneSubTitle,
+        title: "Track Your Mood Effortlessly",
+        description:  "Log daily emotions with simple emoji selections",
         animation: Lottie.asset(
           onBoardingImageFirstPage,
           width: 300.ww(context),
@@ -63,8 +59,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         ),
       ),
       OnboardingPage(
-        title: AppLocalizations.of(context)!.onboardingTwoTitle,
-        description: AppLocalizations.of(context)!.onboardingTwoSubTitle,
+        title:  "Reflect with Guided Journaling",
+        description: "Daily prompts to help you process thoughts",
         animation: Lottie.asset(
           onBoardingImageSecondPage,
           width: 300.ww(context),
@@ -72,8 +68,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         ),
       ),
       OnboardingPage(
-        title: AppLocalizations.of(context)!.onboardingThreeTitle,
-        description: AppLocalizations.of(context)!.onboardingThreeSubTitle,
+        title: "Grow Your Self-Care Garden",
+        description: "Earn badges by completing healthy habits",
         animation: Lottie.asset(
           onBoardingImageThirdPage,
           width: 300.ww(context),
@@ -83,9 +79,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     ];
 
     return Scaffold(
-      backgroundColor: themeMode == ThemeMode.dark
-          ? palette.darkModeBackground
-          : palette.pureWhite,
+      
       body: Column(
         children: [
           Expanded(
@@ -115,7 +109,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
             totalPages: onboardingList.length,
             onContinue: () => _handleContinue(currentPage),
             onSkip: () => _handleSkip(),
-            themeMode: themeMode,
+
           ),
         ],
       ),

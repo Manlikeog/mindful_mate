@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mindful_mate/providers/gamification/gamification_provider.dart';
-import 'package:mindful_mate/screens/chanllenges/model/chanllenge.dart';
+import 'package:mindful_mate/providers/gamification_provider.dart';
+import 'package:mindful_mate/data/model/challenge/challenge.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 
 class ChallengesScreen extends ConsumerWidget {
@@ -13,7 +13,7 @@ class ChallengesScreen extends ConsumerWidget {
     final progress = ref.watch(gamificationProvider);
     final currentLevel = progress.level;
     final challenges = levelChallenges[currentLevel] ?? [];
-    final now = DateTime.now();
+    
 
     return Scaffold(
       appBar: AppBar(

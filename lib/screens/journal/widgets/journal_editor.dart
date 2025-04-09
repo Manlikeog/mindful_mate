@@ -1,29 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:mindful_mate/data/model/journal/journal_entry.dart';
 import 'package:mindful_mate/providers/journal_provider.dart';
-import 'package:intl/intl.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
+import 'package:mindful_mate/utils/app_settings/palette.dart';
+import 'package:mindful_mate/utils/app_widget/custom_app_button.dart';
+import 'package:mindful_mate/utils/extension/auto_resize.dart';
+import 'package:mindful_mate/utils/extension/widget_extension.dart';
 
 class JournalEditor extends ConsumerStatefulWidget {
-  final String prompt;
-  final JournalEntry? entry;
+  final JournalEntry? entry; // For editing existing entries
 
-  const JournalEditor({required this.prompt, this.entry});
+  const JournalEditor({this.entry, super.key});
 
   @override
   _JournalEditorState createState() => _JournalEditorState();
 }
 
 class _JournalEditorState extends ConsumerState<JournalEditor> {
-  late final _titleController = TextEditingController(text: widget.entry?.title ?? '');
-  late final _contentController = TextEditingController(text: widget.entry?.content ?? '');
-  late bool _isBold = widget.entry?.isBold ?? false;
-  late bool _isItalic = widget.entry?.isItalic ?? false;
-  late int? _moodIndex = widget.entry?.moodIndex;
-  bool _showTitle = true;
-  DateTime _lastSave = DateTime.now();
-  late DateTime _selectedDate = widget.entry?.date ?? DateTime.now();
+  late TextEditingController _titleController;
+  late TextEditingController _contentController;
+  int? _selectedMoodIndex;
+  bool _isBold = false;
+  bool _isItalic = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.entry?.title ?? '');
+    _contentController = TextEditingController(text: widget.entry?.content ?? '');
+    _selectedMoodIndex = widget.entry?.moodIndex;
+    _isBold = widget.entry?.isBold ?? false;
+    _isItalic = widget.entry?.isItalic ?? false;
+  }
 
   @override
   void dispose() {
@@ -32,262 +42,201 @@ class _JournalEditorState extends ConsumerState<JournalEditor> {
     super.dispose();
   }
 
-  void _saveEntry() {
-  if (_contentController.text.trim().isNotEmpty) {
-   final updatedEntry = ref.read(journalControllerProvider).createNewEntry(
-                date: DateTime.now(),
-                title: _titleController.text,
-                content: _contentController.text,
-                isBold: _isBold,
-                isItalic: _isItalic,
-                moodIndex: _moodIndex,
-              );
-    if (widget.entry != null) {
-      ref.read(journalProvider.notifier).updateEntry(context, widget.entry!, updatedEntry);
-    } else {
-      ref.read(journalProvider.notifier).saveEntry(context, updatedEntry);
-      // ref.read(gamificationProvider.notifier).logActivity(activityType: 'journal');
-      
-    }
-    setState(() => _lastSave = DateTime.now());
-    Navigator.pop(context);
-  } 
-  
-  else {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Please enter some content before saving.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: injector.palette.pureWhite,
-              ),
+  @override
+  Widget build(BuildContext context) {
+    final palette = injector.palette;
+
+    return Scaffold(
+      appBar: _buildAppBar(context, palette),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 4.pw(context), vertical: 2.ph(context)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDateDisplay(context, palette),
+              SizedBox(height: 2.ph(context)),
+              _buildTitleField(context, palette),
+              SizedBox(height: 2.ph(context)),
+              _buildMoodPicker(context, palette),
+              SizedBox(height: 2.ph(context)),
+              _buildContentField(context, palette),
+              SizedBox(height: 2.ph(context)),
+              _buildFormattingButtons(context, palette),
+              SizedBox(height: 2.ph(context)),
+              _buildSaveButton(context, palette),
+            ],
+          ),
         ),
-        backgroundColor: injector.palette.accentColor,
-        duration: Duration(seconds: 2),
       ),
     );
   }
-}
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: injector.palette.primaryColor,
-              onPrimary: injector.palette.pureWhite,
-              onSurface: injector.palette.textColor,
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: injector.palette.primaryColor,
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
+  AppBar _buildAppBar(BuildContext context, Palette palette) {
+    return AppBar(
+      title: Text(
+        widget.entry == null ? 'New Journal Entry' : 'Edit Journal Entry',
+        style: TextStyle(fontSize: 18.ww(context), color: palette.textColor),
+        overflow: TextOverflow.ellipsis,
+      ),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, color: palette.primaryColor, size: 20.ww(context)),
+        onPressed: () => Navigator.pop(context),
+      ),
     );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: injector.palette.pureWhite,
-      body: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: injector.palette.pureWhite,
-              boxShadow: [
-                BoxShadow(
-                  color: injector.palette.dividerColor.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.format_bold,
-                    color: _isBold
-                        ? injector.palette.secondaryColor
-                        : injector.palette.textColor.withOpacity(0.5),
-                  ),
-                  onPressed: () => setState(() => _isBold = !_isBold),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.format_italic,
-                    color: _isItalic
-                        ? injector.palette.secondaryColor
-                        : injector.palette.textColor.withOpacity(0.5),
-                  ),
-                  onPressed: () => setState(() => _isItalic = !_isItalic),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.calendar_month,
-                    color: injector.palette.primaryColor,
-                  ),
-                  onPressed: () => _selectDate(context),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.title,
-                    color: _showTitle
-                        ? injector.palette.secondaryColor
-                        : injector.palette.textColor.withOpacity(0.5),
-                  ),
-                  onPressed: () => setState(() => _showTitle = !_showTitle),
-                ),
-                Spacer(),
-                Text(
-                  DateFormat('EEEE, d MMMM').format(_selectedDate),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: injector.palette.textColor.withOpacity(0.7),
-                        fontWeight: FontWeight.w500,
+  Widget _buildDateDisplay(BuildContext context, Palette palette) {
+    final date = widget.entry?.date ?? DateTime.now();
+    return Text(
+      DateFormat('MMMM dd, yyyy').format(date),
+      style: TextStyle(
+        fontSize: 16.ww(context),
+        color: palette.textColor.withOpacity(0.7),
+      ),
+    );
+  }
+
+  Widget _buildTitleField(BuildContext context, Palette palette) {
+    return TextField(
+      controller: _titleController,
+      decoration: InputDecoration(
+        hintText: 'Enter title...',
+        hintStyle: TextStyle(
+          color: palette.textColor.withOpacity(0.5),
+          fontSize: 16.ww(context),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: palette.dividerColor),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 4.pw(context), vertical: 2.ph(context)),
+      ),
+      style: TextStyle(fontSize: 18.ww(context), color: palette.textColor),
+      maxLines: 1,
+    );
+  }
+
+  Widget _buildMoodPicker(BuildContext context, Palette palette) {
+    final moods = ['😢', '😐', '😊', '😄', '🌟'];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Mood',
+          style: TextStyle(fontSize: 16.ww(context), color: palette.textColor),
+        ),
+        SizedBox(height: 1.ph(context)),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: List.generate(moods.length, (index) {
+              return Padding(
+                padding: EdgeInsets.only(right: 2.pw(context)),
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedMoodIndex = index),
+                  child: Container(
+                    padding: EdgeInsets.all(2.pw(context)),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _selectedMoodIndex == index
+                          ? palette.primaryColor.withOpacity(0.2)
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: _selectedMoodIndex == index
+                            ? palette.primaryColor
+                            : palette.dividerColor,
                       ),
+                    ),
+                    child: Text(
+                      moods[index],
+                      style: TextStyle(fontSize: 24.ww(context)),
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              );
+            }),
           ),
-          if (widget.entry == null && widget.prompt.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                widget.prompt,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: injector.palette.textColor.withOpacity(0.7),
-                      fontStyle: FontStyle.italic,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_showTitle)
-                      TextField(
-                        controller: _titleController,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: injector.palette.textColor,
-                            ),
-                        decoration: InputDecoration(
-                          hintText: 'Enter title...',
-                          hintStyle: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                color: injector.palette.textColor.withOpacity(0.5),
-                              ),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    Divider(color: injector.palette.dividerColor),
-                    TextField(
-                      controller: _contentController,
-                      maxLines: null,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: _isBold ? FontWeight.bold : FontWeight.normal,
-                            fontStyle: _isItalic ? FontStyle.italic : FontStyle.normal,
-                            color: injector.palette.textColor,
-                          ),
-                      decoration: InputDecoration(
-                        hintText: 'Start writing...',
-                        hintStyle: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(
-                              color: injector.palette.textColor.withOpacity(0.5),
-                            ),
-                        border: InputBorder.none,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        5,
-                        (index) => GestureDetector(
-                          onTap: () => setState(() => _moodIndex = index),
-                          child: Text(
-                            ['😢', '😐', '😊', '😄', '🌟'][index],
-                            style: TextStyle(
-                              fontSize: 32,
-                              color: _moodIndex == index
-                                  ? injector.palette.primaryColor
-                                  : injector.palette.textColor.withOpacity(0.5),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContentField(BuildContext context, Palette palette) {
+    return TextField(
+      controller: _contentController,
+      decoration: InputDecoration(
+        hintText: 'Write your thoughts...',
+        hintStyle: TextStyle(
+          color: palette.textColor.withOpacity(0.5),
+          fontSize: 16.ww(context),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: palette.dividerColor),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 4.pw(context), vertical: 2.ph(context)),
+      ),
+      style: TextStyle(
+        fontSize: 16.ww(context),
+        color: palette.textColor,
+        fontWeight: _isBold ? FontWeight.bold : null,
+        fontStyle: _isItalic ? FontStyle.italic : null,
+      ),
+      maxLines: null, // Allow unlimited lines
+      minLines: 5, // Minimum visible lines
+      keyboardType: TextInputType.multiline,
+    );
+  }
+
+  Widget _buildFormattingButtons(BuildContext context, Palette palette) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.format_bold,
+            color: _isBold ? palette.primaryColor : palette.textColor.withOpacity(0.7),
+            size: 20.ww(context),
           ),
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: injector.palette.pureWhite,
-              boxShadow: [
-                BoxShadow(
-                  color: injector.palette.dividerColor.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Last Saved: ${DateFormat('HH:mm').format(_lastSave)}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: injector.palette.textColor.withOpacity(0.7),
-                      ),
-                ),
-                ElevatedButton(
-                  onPressed: _saveEntry,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: injector.palette.primaryColor,
-                    foregroundColor: injector.palette.pureWhite,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: Text(
-                    'Done',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                ),
-              ],
-            ),
+          onPressed: () => setState(() => _isBold = !_isBold),
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.format_italic,
+            color: _isItalic ? palette.primaryColor : palette.textColor.withOpacity(0.7),
+            size: 20.ww(context),
           ),
-        ],
+          onPressed: () => setState(() => _isItalic = !_isItalic),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton(BuildContext context, Palette palette) {
+    return SizedBox(
+      width: double.infinity,
+      child: CustomAppButton(
+        label: 'Save',
+        onPressed: () {
+          final entry = JournalEntry(
+            id: widget.entry?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+            date: widget.entry?.date ?? DateTime.now(),
+            title: _titleController.text.trim(),
+            content: _contentController.text.trim(),
+            moodIndex: _selectedMoodIndex,
+            isBold: _isBold,
+            isItalic: _isItalic,
+          );
+          ref.read(journalProvider.notifier).saveEntry(context, entry);
+          Navigator.pop(context);
+        },
+        backgroundColor: palette.primaryColor,
+        foregroundColor: palette.pureWhite,
+        height: 56.hh(context),
       ),
     );
   }

@@ -7,7 +7,6 @@ import 'package:mindful_mate/screens/progress/widgets/insight_card.dart';
 import 'package:mindful_mate/screens/progress/widgets/progress_card.dart';
 import 'package:mindful_mate/screens/relaxations/relaxation_screen.dart';
 
-
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
 
@@ -21,13 +20,13 @@ class ProgressScreen extends ConsumerWidget {
           const ChallengeCard(),
           const Gap(16),
           ElevatedButton(
-            onPressed: () => Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const ChallengesScreen())),
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const ChallengesScreen())),
             child: const Text('View Challenges'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const RelaxationScreen())),
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const RelaxationScreen())),
             child: const Text('Relaxation Exercises'),
           ),
           const Gap(16),
@@ -35,6 +34,4 @@ class ProgressScreen extends ConsumerWidget {
       ),
     );
   }
-
-
 }

@@ -6,6 +6,7 @@ import 'package:mindful_mate/providers/relaxation_provider.dart';
 import 'package:mindful_mate/screens/relaxations/widgets/relaxation_card.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/app_settings/palette.dart';
+import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class RelaxationScreen extends ConsumerWidget {
   final String? suggestedExerciseId;
@@ -16,65 +17,70 @@ class RelaxationScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = injector.palette;
     final data = ref.watch(relaxationScreenProvider(suggestedExerciseId));
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: _buildAppBar(data['currentLevel'] as int, palette),
-      body: _buildBody(context, data, palette),
+      appBar: _buildAppBar(data['currentLevel'] as int, palette, context),
+      body: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFE3F2FD), Color(0xFFF3E5F5)],
+            ),
+          ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 4.pw(context), vertical: 2.ph(context)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (data['suggestedCard'] != null) ...[
+                  _buildSectionTitle(context, 'Suggested Relaxation (5-Point Booster)', palette.primaryColor),
+                  RelaxationCard(
+                    cardData: data['suggestedCard'] as RelaxationCardData,
+                    palette: palette,
+                  ),
+                  SizedBox(height: 2.ph(context)),
+                ],
+                _buildSectionTitle(context, 'Explore More', palette.textColor),
+                ...(data['otherCards'] as List<RelaxationCardData>).map(
+                  (cardData) => RelaxationCard(
+                    cardData: cardData,
+                    palette: palette,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  AppBar _buildAppBar(int currentLevel, Palette palette) {
+  AppBar _buildAppBar(int currentLevel, Palette palette, BuildContext context) {
     return AppBar(
       title: Text(
         'Level $currentLevel Relaxation',
-        style: TextStyle(color: palette.textColor),
+        style: TextStyle(color: palette.textColor, fontSize: 18.ww(context)),
+        overflow: TextOverflow.ellipsis,
       ),
       backgroundColor: Colors.transparent,
       elevation: 0,
     );
   }
 
-  Widget _buildBody(BuildContext context, Map<String, dynamic> data, Palette palette) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFE3F2FD), // Colors.blue.shade50
-            Color(0xFFF3E5F5), // Colors.purple.shade50
-          ],
-        ),
-      ),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        children: [
-          if (data['suggestedCard'] != null) ...[
-            _buildSectionTitle(context, 'Suggested Relaxation (5-Point Booster)', palette.primaryColor),
-            RelaxationCard(
-              cardData: data['suggestedCard'] as RelaxationCardData,
-              palette: palette,
-            ),
-            const SizedBox(height: 16),
-          ],
-          _buildSectionTitle(context, 'Explore More', palette.textColor),
-          ...(data['otherCards'] as List<RelaxationCardData>).map(
-            (cardData) => RelaxationCard(cardData: cardData, palette: palette),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSectionTitle(BuildContext context, String title, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 2.ph(context)),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+        style: TextStyle(
+          fontSize: 20.ww(context),
+          color: color,
+          fontWeight: FontWeight.bold,
+        ),
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

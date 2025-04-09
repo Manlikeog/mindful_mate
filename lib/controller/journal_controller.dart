@@ -56,11 +56,11 @@ class JournalController {
     await _dbHelper.deleteJournalEntry(id);
   }
 
-  List<JournalEntry> filterEntriesByDate(List<JournalEntry> entries, DateTime date) {
+  Future<List<JournalEntry>> filterEntriesByDate(List<JournalEntry> entries, DateTime date) async {
     return entries.where((entry) => isSameDay(entry.date, date)).toList();
   }
 
-  List<JournalEntry> filterEntriesBySearchQuery(List<JournalEntry> entries, String searchQuery) {
+ Future<List<JournalEntry>> filterEntriesBySearchQuery(List<JournalEntry> entries, String searchQuery) async {
     final lowerQuery = searchQuery.toLowerCase();
     return entries
         .where((entry) =>

@@ -10,6 +10,7 @@ import 'package:mindful_mate/screens/journal/widgets/journal_card.dart';
 import 'package:mindful_mate/screens/journal/widgets/journal_editor.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/app_settings/palette.dart';
+import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class JournalScreen extends ConsumerStatefulWidget {
   static const path = 'journal';
@@ -41,7 +42,11 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
 
     return Scaffold(
       appBar: _buildAppBar(context, journalNotifier, palette),
-      body: _buildBody(context, entries, viewMode, palette, journalNotifier),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: _buildBody(context, entries, viewMode, palette, journalNotifier),
+        ),
+      ),
       floatingActionButton: _buildFAB(context, palette),
       floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
     );
@@ -58,11 +63,11 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
             journalNotifier.isSortDescending ? Icons.arrow_downward : Icons.arrow_upward,
             color: palette.primaryColor,
           ),
-          onPressed: () => ref.read(journalProvider.notifier).toggleSortOrder(),
+          onPressed: () async => await ref.read(journalProvider.notifier).toggleSortOrder(),
         ),
         IconButton(
           icon: Icon(Icons.filter_list, color: palette.primaryColor),
-          onPressed: () => _showFilterDialog(context),
+          onPressed: () async => await _showFilterDialog(context),
         ),
         IconButton(
           icon: Icon(
@@ -72,56 +77,57 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
           onPressed: () => ref.read(viewModeProvider.notifier).state = !ref.read(viewModeProvider),
         ),
       ],
+      flexibleSpace: Container(
+        padding: EdgeInsets.symmetric(horizontal: 4.pw(context)),
+      ),
     );
   }
 
   Widget _buildSearchField(BuildContext context) {
     final palette = injector.palette;
-    return TextField(
-      decoration: InputDecoration(
-        hintText: 'Search entries...',
-        hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: palette.textColor.withOpacity(0.5),
-            ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: palette.dividerColor),
+    return Container(
+      constraints: BoxConstraints(maxWidth: 80.pw(context)),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: 'Search entries...',
+          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: palette.textColor.withOpacity(0.5),
+              ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: palette.dividerColor),
+          ),
+          filled: true,
+          fillColor: palette.textFieldColorLightMode,
+          prefixIcon: Icon(Icons.search, color: palette.primaryColor),
         ),
-        filled: true,
-        fillColor: palette.textFieldColorLightMode,
-        prefixIcon: Icon(Icons.search, color: palette.primaryColor),
+        style: TextStyle(fontSize: 16.ww(context)),
+        onChanged: (value) async {
+          _debounce?.cancel();
+          _debounce = Timer(const Duration(milliseconds: 300), ()  async{
+           await ref.read(journalProvider.notifier).setSearchQuery(value);
+          });
+        },
       ),
-      style: Theme.of(context).textTheme.bodyMedium,
-      onChanged: (value) {
-        _debounce?.cancel();
-        _debounce = Timer(const Duration(milliseconds: 300), () {
-          ref.read(journalProvider.notifier).setSearchQuery(value);
-        });
-      },
     );
   }
 
-  Widget _buildBody(
-    BuildContext context,
-    List<JournalEntry> entries,
-    bool viewMode,
-    Palette palette,
-    JournalNotifier journalNotifier,
-  ) {
-    return Stack(
-      children: [
-        _buildPromptBackground(context),
-        if (entries.isNotEmpty)
-          Positioned.fill(
-            child: IgnorePointer(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                child: Container(color: palette.lightGray.withOpacity(0.1)),
+  Widget _buildBody(BuildContext context, List<JournalEntry> entries, bool viewMode, Palette palette, JournalNotifier journalNotifier) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height, // Full height to ensure scrolling works
+      child: Stack(
+        children: [
+          _buildPromptBackground(context),
+          if (entries.isNotEmpty)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: Container(color: palette.lightGray.withOpacity(0.1)),
+                ),
               ),
             ),
-          ),
-        SafeArea(
-          child: Column(
+          Column(
             children: [
               if (journalNotifier.filterDate != null)
                 _buildFilterInfo(context, journalNotifier.filterDate!, palette),
@@ -130,8 +136,8 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
               ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -183,7 +189,7 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
               size: 20,
               color: palette.textColor.withOpacity(0.7),
             ),
-            onPressed: () => ref.read(journalProvider.notifier).setFilterDate(null),
+            onPressed:  () async => await ref.read(journalProvider.notifier).setFilterDate(null),
           ),
         ],
       ),
@@ -243,7 +249,7 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: JournalEditor(
-            prompt: entry == null ? "Describe a moment you felt proud" : "",
+            // prompt: entry == null ? "Describe a moment you felt proud" : "",
             entry: entry,
           ),
         ),
@@ -278,7 +284,7 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
     );
   }
 
-  void _showFilterDialog(BuildContext context) {
+  Future<void> _showFilterDialog(BuildContext context) async {
     final palette = injector.palette;
     showDialog(
       context: context,
@@ -308,16 +314,16 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
                     child: child!,
                   ),
                 );
-                if (picked != null) {
-                  ref.read(journalProvider.notifier).setFilterDate(picked);
+                if (picked != null)  {
+                await  ref.read(journalProvider.notifier).setFilterDate(picked);
                   Navigator.pop(ctx);
                 }
               },
               child: const Text('Select Date'),
             ),
             TextButton(
-              onPressed: () {
-                ref.read(journalProvider.notifier).setFilterDate(null);
+              onPressed: () async {
+               await ref.read(journalProvider.notifier).setFilterDate(null);
                 Navigator.pop(ctx);
               },
               child: Text('Clear Filter', style: TextStyle(color: palette.textColor)),

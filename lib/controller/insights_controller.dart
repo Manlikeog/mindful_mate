@@ -125,8 +125,8 @@ class InsightsController {
     return "Your mood dipped slightly. Try a challenge! 📈";
   }
 
-  double calculateAverageMood(Map<DateTime, MoodEntry> moods) {
-    if (moods.isEmpty) return 0;
+  double? calculateAverageMood(Map<DateTime, MoodEntry> moods) {
+    if (moods.isEmpty) return null;
     return moods.values.map((e) => e.moodRating).reduce((a, b) => a + b) /
         moods.length;
   }

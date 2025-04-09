@@ -46,7 +46,7 @@ String getDateRange(CalendarViewMode viewMode, DateTime baseDate) {
 String? getSuggestedExercise(InsightsProvider insights) {
   final avgMood = insights.getAverageMood();
   print(avgMood);
-  if (avgMood == 0) return null;
+  if (avgMood == null) return null;
   if (avgMood < 1.5) return 'deep_breathing';
   if (avgMood < 2.5) return 'mindfulness';
   return null;

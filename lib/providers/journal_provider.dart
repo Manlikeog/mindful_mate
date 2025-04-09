@@ -10,7 +10,8 @@ final journalControllerProvider = Provider((ref) {
   return JournalController(dbHelper);
 });
 
-final journalProvider = StateNotifierProvider<JournalNotifier, List<JournalEntry>>((ref) {
+final journalProvider =
+    StateNotifierProvider<JournalNotifier, List<JournalEntry>>((ref) {
   return JournalNotifier(ref);
 });
 
@@ -48,16 +49,17 @@ class JournalNotifier extends StateNotifier<List<JournalEntry>> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: message.contains('booster') ? Colors.green : Colors.grey,
+            backgroundColor:
+                message.contains('booster') ? Colors.green : Colors.grey,
           ),
         );
       },
     );
     state = List.from([...state.where((e) => e.id != entry.id), entry]);
     if (_filterDate == null || controller.isSameDay(_filterDate!, entry.date)) {
-    await _applyFilters();
-        ref.read(gamificationProvider.notifier).refresh();
-  }
+      await _applyFilters();
+      ref.read(gamificationProvider.notifier).refresh();
+    }
   }
 
   Future<void> deleteEntry(String id) async {
@@ -67,7 +69,8 @@ class JournalNotifier extends StateNotifier<List<JournalEntry>> {
     await _applyFilters();
   }
 
-  Future<void> updateEntry(BuildContext context, JournalEntry oldEntry, JournalEntry newEntry) async {
+  Future<void> updateEntry(BuildContext context, JournalEntry oldEntry,
+      JournalEntry newEntry) async {
     final controller = ref.read(journalControllerProvider);
     final progress = ref.read(gamificationProvider);
     state = state.map((e) => e == oldEntry ? newEntry : e).toList();
@@ -79,7 +82,8 @@ class JournalNotifier extends StateNotifier<List<JournalEntry>> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: message.contains('booster') ? Colors.green : Colors.grey,
+            backgroundColor:
+                message.contains('booster') ? Colors.green : Colors.grey,
           ),
         );
       },
@@ -87,33 +91,38 @@ class JournalNotifier extends StateNotifier<List<JournalEntry>> {
     await _applyFilters();
   }
 
-  void setSearchQuery(String query) {
+  Future<void> setSearchQuery(String query) async {
+    print('lol');
+    print(query);
     _searchQuery = query.toLowerCase();
-    _applyFilters();
+    await _applyFilters();
   }
 
-  void toggleSortOrder() {
+  Future<void> toggleSortOrder() async {
     _sortDescending = !_sortDescending;
-    _applyFilters();
+    await _applyFilters();
   }
 
-  void setFilterDate(DateTime? date) {
+  Future<void> setFilterDate(DateTime? date) async {
     _filterDate = date;
-    _applyFilters();
+    await _applyFilters();
   }
 
   Future<void> _applyFilters() async {
-    var filtered = state;
+    await _loadEntries();
+    List<JournalEntry> filtered = List.from(state);
+
     final controller = ref.read(journalControllerProvider);
 
     if (_searchQuery.isNotEmpty) {
-      filtered = controller.filterEntriesBySearchQuery(filtered, _searchQuery);
+      filtered =
+          await controller.filterEntriesBySearchQuery(filtered, _searchQuery);
     }
     if (_filterDate != null) {
-      filtered = controller.filterEntriesByDate(filtered, _filterDate!);
+      filtered = await controller.filterEntriesByDate(filtered, _filterDate!);
     }
     filtered = controller.sortEntries(filtered, _sortDescending);
-    state = filtered;
+    state = List.from(filtered);
   }
 }
 

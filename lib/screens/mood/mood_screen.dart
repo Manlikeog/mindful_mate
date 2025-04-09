@@ -6,6 +6,7 @@ import 'package:mindful_mate/screens/mood/widgets/notification_banner.dart';
 import 'package:mindful_mate/screens/mood/widgets/trend_chart.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:confetti/confetti.dart';
+import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class MoodTrackerScreen extends ConsumerStatefulWidget {
   const MoodTrackerScreen({super.key});
@@ -35,14 +36,16 @@ class MoodTrackerScreenState extends ConsumerState<MoodTrackerScreen> {
 
     return Stack(
       children: [
-        SingleChildScrollView(
-          child: Column(
-            children: [
-                  const NotificationBanner(),
-              const MoodCalendar(),
-              const TrendChart(),
-              const Gap(16),
-            ],
+        SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const NotificationBanner(),
+                const MoodCalendar(),
+                const TrendChart(),
+                SizedBox(height: 2.ph(context)),
+              ],
+            ),
           ),
         ),
         Align(

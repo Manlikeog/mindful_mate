@@ -21,7 +21,7 @@ class InsightsProvider {
     return controller.getMoodInsight(moods, baseDate, viewMode);
   }
 
-  double getAverageMood() {
+  double? getAverageMood() {
     final controller = ref.read(insightsControllerProvider);
     final moods = ref.read(moodProvider);
     return controller.calculateAverageMood(moods);

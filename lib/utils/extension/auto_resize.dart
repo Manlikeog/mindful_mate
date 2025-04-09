@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
 extension AutoResize on num {
-  // Method to convert the string to amount format
-
-  // Get the proportionate height as per screen size
   double hh(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-    return (this / 932) * screenHeight;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final scaledHeight = (this / 932) * screenHeight;
+    // Clamp to prevent extreme scaling
+    return scaledHeight.clamp(10.0, screenHeight * 0.9);
   }
 
-// Get the proportionate height as per screen size
   double ww(BuildContext context) {
-    num screenWidth = MediaQuery.of(context).size.width;
-    return (this / 430) * screenWidth;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final scaledWidth = (this / 430) * screenWidth;
+    // Clamp to prevent extreme scaling
+    return scaledWidth.clamp(10.0, screenWidth * 0.9);
   }
+
+  // Percentage-based sizing for flexibility
+  double ph(BuildContext context) => this * MediaQuery.of(context).size.height / 100;
+  double pw(BuildContext context) => this * MediaQuery.of(context).size.width / 100;
 }

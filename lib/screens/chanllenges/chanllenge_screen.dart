@@ -6,6 +6,10 @@ import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class ChallengesScreen extends ConsumerWidget {
+  static const String fullPath = '/challenges';
+  static const String path = 'challenges';
+  static const String pathName = '/challenges';
+
   const ChallengesScreen({super.key});
 
   @override

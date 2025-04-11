@@ -50,7 +50,7 @@ class JournalNotifier extends StateNotifier<List<JournalEntry>> {
           SnackBar(
             content: Text(message),
             backgroundColor:
-                message.contains('booster') ? Colors.green : Colors.grey,
+                message.contains('no') ? Colors.black : Colors.green,
           ),
         );
       },
@@ -83,7 +83,7 @@ class JournalNotifier extends StateNotifier<List<JournalEntry>> {
           SnackBar(
             content: Text(message),
             backgroundColor:
-                message.contains('booster') ? Colors.green : Colors.grey,
+                message.contains('no') ? Colors.black : Colors.green,
           ),
         );
       },

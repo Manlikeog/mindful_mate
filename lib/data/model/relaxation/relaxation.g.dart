@@ -20,19 +20,25 @@ class RelaxationAdapter extends TypeAdapter<Relaxation> {
       id: fields[0] as String,
       title: fields[1] as String,
       level: fields[2] as int,
+      duration: fields[3] as int,
+      description: fields[4] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Relaxation obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.level);
+      ..write(obj.level)
+      ..writeByte(3)
+      ..write(obj.duration)
+      ..writeByte(4)
+      ..write(obj.description);
   }
 
   @override

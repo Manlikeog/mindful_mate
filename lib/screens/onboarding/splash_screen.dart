@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mindful_mate/screens/onboarding/onboarding_screen.dart';
+import 'package:mindful_mate/screens/progress/progress_screen.dart';
 import 'package:mindful_mate/utils/app_settings/images_strings.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
@@ -51,13 +52,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           key: ObjectKeys.firstTimeLaunch,
         );
 
-        String getLastRoute = await injector.quickStorage.returnString(
-          key: ObjectKeys.path,
-        );
-
-        if (kDebugMode) {
-          print(getLastRoute);
-        }
 
         if (mounted) {
           if (isItAFirstTimeLaunch == false) {
@@ -69,7 +63,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               print('its here');
             }
             context.go(
-              getLastRoute,
+              ProgressScreen.fullPath
             );
           }
         }

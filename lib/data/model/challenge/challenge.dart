@@ -40,9 +40,11 @@ class Challenge {
   });
 
   bool isActive(DateTime now) {
-    return now.isAfter(startDate) && now.isBefore(endDate.add(Duration(days: 1)));
+    return now.isAfter(startDate) &&
+        now.isBefore(endDate.add(Duration(days: 1)));
   }
 }
+
 final Map<int, List<Challenge>> levelChallenges = {
   1: [
     Challenge(
@@ -52,9 +54,9 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 3,
       type: 'mood_log',
       points: 30,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
-
     ),
     Challenge(
       id: 'relax_l1',
@@ -63,9 +65,9 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 2,
       type: 'relaxation',
       points: 30,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
-
     ),
     Challenge(
       id: 'journal_l1',
@@ -74,9 +76,20 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 3,
       type: 'journal',
       points: 40,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
-
+    ),
+    Challenge(
+      id: 'breath_l1',
+      title: 'Breath Starter',
+      description: 'Try Deep Breathing 3 times this week.',
+      goal: 3,
+      type: 'relaxation',
+      points: 20,
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
   ],
   2: [
@@ -87,7 +100,8 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 5,
       type: 'mood_log',
       points: 50,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -97,7 +111,8 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 3,
       type: 'relaxation',
       points: 50,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -106,8 +121,20 @@ final Map<int, List<Challenge>> levelChallenges = {
       description: 'Write 4 journal entries this week.',
       goal: 4,
       type: 'journal',
-      points: 0,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      points: 60,
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
+    ),
+    Challenge(
+      id: 'yoga_l2',
+      title: 'Yoga Flow Fan',
+      description: 'Complete Yoga Flow 3 times this week.',
+      goal: 3,
+      type: 'relaxation',
+      points: 30,
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
   ],
@@ -118,8 +145,9 @@ final Map<int, List<Challenge>> levelChallenges = {
       description: 'Log your mood every day this week.',
       goal: 7,
       type: 'mood_log',
-      points: 50,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      points: 70,
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -128,8 +156,9 @@ final Map<int, List<Challenge>> levelChallenges = {
       description: 'Complete 4 relaxation exercises this week.',
       goal: 4,
       type: 'relaxation',
-      points: 50,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      points: 70,
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -138,13 +167,24 @@ final Map<int, List<Challenge>> levelChallenges = {
       description: 'Write 5 journal entries this week.',
       goal: 5,
       type: 'journal',
-      points: 50,
-      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      points: 70,
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
-
+    ),
+    Challenge(
+      id: 'mindful_l3',
+      title: 'Mindfulness Pro',
+      description: 'Practice Mindfulness 4 times this week.',
+      goal: 4,
+      type: 'relaxation',
+      points: 50,
+      startDate:
+          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
   ],
 };
 
-final Map<int, int> levelPoints = {1: 100, 2: 250, 3: 400};
-final Map<int, int> passMarks = {1: 90, 2: 225, 3: 360};
+final Map<int, int> passMarks = {1: 90, 2: 180, 3: 240};
+final Map<int, int> levelPoints = {1: 145, 2: 227, 3: 309};

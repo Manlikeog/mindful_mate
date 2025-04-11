@@ -28,13 +28,15 @@ class UserProgressAdapter extends TypeAdapter<UserProgress> {
       badges: (fields[8] as List).cast<String>(),
       completedRelaxations: (fields[9] as Map).cast<String, DateTime>(),
       moodLogDates: (fields[10] as List).cast<DateTime>(),
+      journalLogDates: (fields[11] as List).cast<DateTime>(),
+      relaxationLogDates: (fields[12] as List).cast<DateTime>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, UserProgress obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.level)
       ..writeByte(1)
@@ -56,7 +58,11 @@ class UserProgressAdapter extends TypeAdapter<UserProgress> {
       ..writeByte(9)
       ..write(obj.completedRelaxations)
       ..writeByte(10)
-      ..write(obj.moodLogDates);
+      ..write(obj.moodLogDates)
+      ..writeByte(11)
+      ..write(obj.journalLogDates)
+      ..writeByte(12)
+      ..write(obj.relaxationLogDates);
   }
 
   @override

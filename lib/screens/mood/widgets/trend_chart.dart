@@ -1,4 +1,3 @@
-// lib/widgets/trend_chart.dart
 import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:mindful_mate/providers/calendar_provider.dart';
 import 'package:mindful_mate/providers/mood_provider.dart';
 import 'package:mindful_mate/screens/mood/utils/mood_util.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
+import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class TrendChart extends ConsumerWidget {
   const TrendChart({super.key});
@@ -18,11 +18,11 @@ class TrendChart extends ConsumerWidget {
     final currentWeekStart = ref.watch(currentDisplayedWeekProvider);
 
     return Card(
-      margin: const EdgeInsets.all(16),
+      margin: EdgeInsets.all(4.pw(context)), // Scaled margin
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
-        height: 300,
+        height: 40.ph(context), // 40% of screen height
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -32,18 +32,20 @@ class TrendChart extends ConsumerWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(2.pw(context)), // Scaled padding
         child: Column(
           children: [
             Text(
               'Mood Trend',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: injector.palette.textColor,
+                    fontSize: 16.ww(context), // Scaled text
                   ),
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 2.ph(context)), // Scaled spacing
             Expanded(
               child: MoodLineChart(
                 filteredData: filteredData,
@@ -94,6 +96,7 @@ class MoodLineChart extends StatelessWidget {
                 Theme.of(context).textTheme.bodyMedium!.copyWith(
                       color: injector.palette.pureWhite,
                       fontWeight: FontWeight.w500,
+                      fontSize: 12.ww(context), // Scaled tooltip text
                     ),
               );
             }).toList(),
@@ -105,7 +108,7 @@ class MoodLineChart extends StatelessWidget {
           horizontalInterval: 1,
           getDrawingHorizontalLine: (_) => FlLine(
             color: injector.palette.dividerColor.withOpacity(0.5),
-            strokeWidth: 1,
+            strokeWidth: 1.ww(context), // Scaled line width
           ),
         ),
         titlesData: FlTitlesData(
@@ -114,15 +117,16 @@ class MoodLineChart extends StatelessWidget {
               showTitles: true,
               interval: 1,
               getTitlesWidget: (value, _) => Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: EdgeInsets.only(right: 2.pw(context)),
                 child: Text(
                   ['😢', '😐', '😊', '😄', '🌟'][value.toInt()],
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: injector.palette.textColor.withOpacity(0.7),
+                        fontSize: 12.ww(context), // Scaled text
                       ),
                 ),
               ),
-              reservedSize: 40,
+              reservedSize: 10.pw(context), // Dynamic reserved space
             ),
           ),
           bottomTitles: AxisTitles(
@@ -136,22 +140,26 @@ class MoodLineChart extends StatelessWidget {
                 return Transform.rotate(
                   angle: -45 * (pi / 180),
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 12),
+                    padding: EdgeInsets.only(top: 2.ph(context)),
                     child: Text(
                       label,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: injector.palette.textColor.withOpacity(0.7),
+                            fontSize: 10.ww(context), // Scaled text
                           ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 );
               },
-              reservedSize: 48,
+              reservedSize: 12.pw(context), // Dynamic reserved space
               interval: viewMode == CalendarViewMode.weekly ? 86400000 : null,
             ),
           ),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         borderData: FlBorderData(
           show: true,
@@ -166,7 +174,7 @@ class MoodLineChart extends StatelessWidget {
             spots: spots,
             isCurved: true,
             curveSmoothness: 0.3,
-            barWidth: 3,
+            barWidth: 2.ww(context), // Scaled bar width
             belowBarData: BarAreaData(
               show: true,
               gradient: LinearGradient(
@@ -174,7 +182,8 @@ class MoodLineChart extends StatelessWidget {
               ),
             ),
             dotData: const FlDotData(show: false),
-            gradient: LinearGradient(colors: gradientColors, stops: const [0.2, 0.5, 0.8]),
+            gradient: LinearGradient(
+                colors: gradientColors, stops: const [0.2, 0.5, 0.8]),
           ),
         ],
       ),

@@ -37,6 +37,12 @@ class UserProgress {
   @HiveField(10)
   final List<DateTime> moodLogDates;
 
+  @HiveField(11)
+  final List<DateTime> journalLogDates;
+
+  @HiveField(12) // New field
+  final List<DateTime> relaxationLogDates; // Tracks all relaxation days
+
   UserProgress({
     this.level = 1,
     this.totalPoints = 0,
@@ -48,7 +54,9 @@ class UserProgress {
     this.completedChallenges = const [],
     this.badges = const [],
     this.completedRelaxations = const {},
-    this.moodLogDates = const [], // Already has a default value
+    this.moodLogDates = const [],
+    this.journalLogDates = const [],
+    this.relaxationLogDates = const [],
   });
 
   UserProgress copyWith({
@@ -63,6 +71,8 @@ class UserProgress {
     List<String>? badges,
     Map<String, DateTime>? completedRelaxations,
     List<DateTime>? moodLogDates,
+    List<DateTime>? journalLogDates,
+    List<DateTime>? relaxationLogDates,
   }) {
     return UserProgress(
       level: level ?? this.level,
@@ -75,7 +85,9 @@ class UserProgress {
       completedChallenges: completedChallenges ?? List.from(this.completedChallenges),
       badges: badges ?? List.from(this.badges),
       completedRelaxations: completedRelaxations ?? Map.from(this.completedRelaxations),
-      moodLogDates: moodLogDates ?? List.from(this.moodLogDates), // Ensure non-null
+      moodLogDates: moodLogDates ?? List.from(this.moodLogDates),
+      journalLogDates: journalLogDates ?? List.from(this.journalLogDates),
+      relaxationLogDates: relaxationLogDates ?? List.from(this.relaxationLogDates),
     );
   }
 }

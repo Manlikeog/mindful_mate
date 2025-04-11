@@ -9,6 +9,9 @@ import 'package:confetti/confetti.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class MoodTrackerScreen extends ConsumerStatefulWidget {
+    static const String path = 'moodTracker';
+  static const String fullPath = '/moodTracker';
+  static const String pathName = '/moodTracker';
   const MoodTrackerScreen({super.key});
 
   @override
@@ -21,7 +24,8 @@ class MoodTrackerScreenState extends ConsumerState<MoodTrackerScreen> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
   }
 
   @override
@@ -34,29 +38,58 @@ class MoodTrackerScreenState extends ConsumerState<MoodTrackerScreen> {
   Widget build(BuildContext context) {
     final palette = injector.palette;
 
-    return Stack(
-      children: [
-        SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                const NotificationBanner(),
-                const MoodCalendar(),
-                const TrendChart(),
-                SizedBox(height: 2.ph(context)),
-              ],
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text(
+          'Mood Tracker',
+          style: TextStyle(
+            fontSize: 20.ww(context),
+            color: palette.textColor,
+          ),
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              palette.primaryColor.withOpacity(0.2),
+              palette.accentColor.withOpacity(0.2)
+            ],
+          ),
+        ),
+        child: Stack(
+          children: [
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const NotificationBanner(),
+                    const MoodCalendar(),
+                    const TrendChart(),
+                    SizedBox(height: 2.ph(context)),
+                  ],
+                ),
+              ),
             ),
-          ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                colors: [
+                  palette.primaryColor,
+                  palette.secondaryColor,
+                  palette.accentColor
+                ],
+              ),
+            ),
+          ],
         ),
-        Align(
-          alignment: Alignment.topCenter,
-          child: ConfettiWidget(
-            confettiController: _confettiController,
-            blastDirectionality: BlastDirectionality.explosive,
-            colors: [palette.primaryColor, palette.secondaryColor, palette.accentColor],
-          ),
-        ),
-      ],
+      ),
     );
   }
 

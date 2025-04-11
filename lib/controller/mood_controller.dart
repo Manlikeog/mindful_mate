@@ -12,7 +12,8 @@ class MoodController {
   final GamificationController _gamificationController;
   final Ref? ref;
 
-  MoodController(this._db, {this.ref}) : _gamificationController = GamificationController(_db);
+  MoodController(this._db, {this.ref})
+      : _gamificationController = GamificationController(_db);
 
   Future<List<MoodEntry>> fetchMoodEntries() async {
     return await _db.getMoodEntries();
@@ -37,11 +38,11 @@ class MoodController {
       if (ref != null) {
         ref!.read(gamificationProvider.notifier).state = updatedProgress;
       }
-
+      print('lol');
       final isToday = isSameDay(entry.date, DateTime.now());
-      final alreadyLoggedToday = updatedProgress.moodLogDates.any((d) => isSameDay(d, entry.date));
+      final pointsAwarded = updatedProgress.totalPoints - progress.totalPoints;
       final feedback = isToday
-          ? alreadyLoggedToday
+          ? pointsAwarded <= 0
               ? 'Mood updated for today, no additional points awarded.'
               : 'Mood logged successfully! Check your challenge progress!'
           : 'Previous day mood logged but no points awarded.';

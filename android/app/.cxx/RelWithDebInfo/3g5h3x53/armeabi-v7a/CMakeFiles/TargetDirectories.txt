@@ -1,0 +1,2 @@
+/Users/timilehinoguntade/Downloads/mindful_mate/android/app/.cxx/RelWithDebInfo/3g5h3x53/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/timilehinoguntade/Downloads/mindful_mate/android/app/.cxx/RelWithDebInfo/3g5h3x53/armeabi-v7a/CMakeFiles/rebuild_cache.dir

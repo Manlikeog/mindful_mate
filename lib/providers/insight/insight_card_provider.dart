@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/data/model/insight/insight_card.dart';
+import 'package:mindful_mate/data/model/relaxation/relaxation.dart';
 import 'package:mindful_mate/providers/calendar_provider.dart';
 import 'package:mindful_mate/providers/gamification_provider.dart';
 import 'package:mindful_mate/data/model/progress_card/user_progress.dart';
@@ -17,7 +18,7 @@ final insightsCardProvider = Provider((ref) {
   final title = getTitle(viewMode);
   final insightText = insights.getMoodInsight(baseDate, viewMode);
   final dateRange = getDateRange(viewMode, baseDate);
-  final suggestedExercise = getSuggestedExercise(insights);
+  final suggestedExercise = getSuggestedExercise(insights, progress.level);
   final isExerciseCompleted =
       getIsExerciseCompleted(suggestedExercise, progress);
 
@@ -43,13 +44,37 @@ String getDateRange(CalendarViewMode viewMode, DateTime baseDate) {
   return '${_monthAbbreviation(baseDate.month)} ${baseDate.year}';
 }
 
-String? getSuggestedExercise(InsightsProvider insights) {
+String? getSuggestedExercise(InsightsProvider insights, int userLevel) {
   final avgMood = insights.getAverageMood();
-  print(avgMood);
   if (avgMood == null) return null;
-  if (avgMood < 1.5) return 'deep_breathing';
-  if (avgMood < 2.5) return 'mindfulness';
-  return null;
+
+  // Get available exercises for the user's level
+  final availableExercises = levelRelaxations[userLevel] ?? [];
+  if (availableExercises.isEmpty) return null;
+
+  // Mood-based suggestions
+  if (avgMood < 1.5) {
+    // Low mood: Suggest calming, grounding exercises
+    return availableExercises.firstWhere(
+      (r) => r.id.contains('breath') || r.id.contains('body') || r.id.contains('progressive'),
+      orElse: () => availableExercises.first, // Fallback to first available
+    ).id;
+  } else if (avgMood < 2.5) {
+    // Medium mood: Suggest mindfulness or relaxation-focused exercises
+    return availableExercises.firstWhere(
+      (r) => r.id.contains('mindfulness') || r.id.contains('meditate') || r.id.contains('tense'),
+      orElse: () => availableExercises.firstWhere(
+        (r) => r.id.contains('visualize') || r.id.contains('count'),
+        orElse: () => availableExercises.first, // Fallback
+      ),
+    ).id;
+  } else {
+    // High mood: Suggest uplifting or energizing exercises
+    return availableExercises.firstWhere(
+      (r) => r.id.contains('yoga') || r.id.contains('stretch') || r.id.contains('gratitude') || r.id.contains('kindness'),
+      orElse: () => availableExercises.last, // Fallback to last available
+    ).id;
+  }
 }
 
 bool getIsExerciseCompleted(String? exercise, UserProgress progress) {

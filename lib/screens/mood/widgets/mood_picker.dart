@@ -1,8 +1,8 @@
-// lib/screens/mood_picker.dart
 import 'package:flutter/material.dart';
 import 'package:mindful_mate/data/model/mood/mood_entry.dart';
 import 'package:mindful_mate/providers/mood_provider.dart';
 import 'package:mindful_mate/screens/mood/mood_screen.dart';
+import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class MoodPicker extends StatelessWidget {
   final DateTime date;
@@ -13,36 +13,44 @@ class MoodPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Log Mood'),
-      content: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          for (var i = 0; i < 5; i++)
-            IconButton(
-              icon: Text(['😢', '😐', '😊', '😄', '🌟'][i],
-                  style: const TextStyle(fontSize: 24)),
-              onPressed: () {
-                notifier.logMood(MoodEntry(date: date, moodRating: i), context);
-
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Mood logged!'),
-                      backgroundColor: Colors.grey,
-                    ),
-                  );
-                  (context.findAncestorStateOfType<MoodTrackerScreenState>())
-                      ?.showRewardAnimation();
-                }
-                Navigator.pop(context);
-              },
-            ),
-        ],
+      title: Text(
+        'Log Mood',
+        style: TextStyle(fontSize: 16.ww(context)), // Scaled text
+      ),
+      content: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            for (var i = 0; i < 5; i++)
+              IconButton(
+                icon: Text(
+                  ['😢', '😐', '😊', '😄', '🌟'][i],
+                  style: TextStyle(fontSize: 24.ww(context)), // Scaled emoji
+                ),
+                padding: EdgeInsets.all(2.pw(context)), // Scaled padding
+                constraints: BoxConstraints.tight(Size(12.pw(context), 12.pw(context))), // Scaled touch area
+                onPressed: () {
+                  notifier.logMood(MoodEntry(date: date, moodRating: i), context);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Mood logged!', style: TextStyle(fontSize: 14.ww(context))),
+                        backgroundColor: Colors.grey,
+                      ),
+                    );
+                    (context.findAncestorStateOfType<MoodTrackerScreenState>())?.showRewardAnimation();
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel', style: TextStyle(fontSize: 14.ww(context))), // Scaled text
         ),
       ],
     );
@@ -51,7 +59,10 @@ class MoodPicker extends StatelessWidget {
   static void show(BuildContext context, DateTime date, MoodNotifier notifier) {
     showDialog(
       context: context,
-      builder: (_) => MoodPicker(date: date, notifier: notifier),
+      builder: (_) => SizedBox(
+        width: 80.pw(context), // Limit dialog width to 80% of screen
+        child: MoodPicker(date: date, notifier: notifier),
+      ),
     );
   }
 }

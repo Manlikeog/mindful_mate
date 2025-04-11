@@ -1,4 +1,3 @@
-// lib/screens/journal/journal_screen.dart
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -13,9 +12,10 @@ import 'package:mindful_mate/utils/app_settings/palette.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class JournalScreen extends ConsumerStatefulWidget {
-  static const path = 'journal';
-  static const fullPath = '/journal';
-  static const pathName = '/journal';
+    static const String path = 'journal';
+  static const String pathName = 'journal';
+  static const String fullPath = '/journal';
+
 
   const JournalScreen({super.key});
 
@@ -25,7 +25,8 @@ class JournalScreen extends ConsumerStatefulWidget {
 
 class JournalScreenState extends ConsumerState<JournalScreen> {
   Timer? _debounce;
-  static const _currentPrompt = "Recall a time when you experienced a sense of pride";
+  static const _currentPrompt =
+      "Recall a time when you experienced a sense of pride";
 
   @override
   void dispose() {
@@ -44,15 +45,42 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
       appBar: _buildAppBar(context, journalNotifier, palette),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: _buildBody(context, entries, viewMode, palette, journalNotifier),
+          padding: EdgeInsets.symmetric(
+              horizontal: 2.pw(context), vertical: 2.ph(context)),
+          child: Stack(
+            children: [
+              _buildPromptBackground(context),
+              if (entries.isNotEmpty)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                      child:
+                          Container(color: palette.lightGray.withOpacity(0.1)),
+                    ),
+                  ),
+                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (journalNotifier.filterDate != null)
+                    _buildFilterInfo(
+                        context, journalNotifier.filterDate!, palette),
+                  viewMode ? _buildGridView(entries) : _buildListView(entries),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: _buildFAB(context, palette),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.miniCenterDocked,
     );
   }
 
-  AppBar _buildAppBar(BuildContext context, JournalNotifier journalNotifier, Palette palette) {
+  AppBar _buildAppBar(
+      BuildContext context, JournalNotifier journalNotifier, Palette palette) {
     return AppBar(
       elevation: 0,
       backgroundColor: palette.pureWhite,
@@ -60,21 +88,28 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
       actions: [
         IconButton(
           icon: Icon(
-            journalNotifier.isSortDescending ? Icons.arrow_downward : Icons.arrow_upward,
+            journalNotifier.isSortDescending
+                ? Icons.arrow_downward
+                : Icons.arrow_upward,
             color: palette.primaryColor,
+            size: 20.ww(context),
           ),
-          onPressed: () async => await ref.read(journalProvider.notifier).toggleSortOrder(),
+          onPressed: () async =>
+              await ref.read(journalProvider.notifier).toggleSortOrder(),
         ),
         IconButton(
-          icon: Icon(Icons.filter_list, color: palette.primaryColor),
+          icon: Icon(Icons.filter_list,
+              color: palette.primaryColor, size: 20.ww(context)),
           onPressed: () async => await _showFilterDialog(context),
         ),
         IconButton(
           icon: Icon(
             ref.watch(viewModeProvider) ? Icons.list : Icons.grid_view,
             color: palette.primaryColor,
+            size: 20.ww(context),
           ),
-          onPressed: () => ref.read(viewModeProvider.notifier).state = !ref.read(viewModeProvider),
+          onPressed: () => ref.read(viewModeProvider.notifier).state =
+              !ref.read(viewModeProvider),
         ),
       ],
       flexibleSpace: Container(
@@ -92,51 +127,25 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
           hintText: 'Search entries...',
           hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: palette.textColor.withOpacity(0.5),
+                fontSize: 14.ww(context),
               ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(3.pw(context)),
             borderSide: BorderSide(color: palette.dividerColor),
           ),
           filled: true,
           fillColor: palette.textFieldColorLightMode,
-          prefixIcon: Icon(Icons.search, color: palette.primaryColor),
+          prefixIcon: Icon(Icons.search,
+              color: palette.primaryColor, size: 20.ww(context)),
+          contentPadding: EdgeInsets.symmetric(vertical: 1.ph(context)),
         ),
         style: TextStyle(fontSize: 16.ww(context)),
         onChanged: (value) async {
           _debounce?.cancel();
-          _debounce = Timer(const Duration(milliseconds: 300), ()  async{
-           await ref.read(journalProvider.notifier).setSearchQuery(value);
+          _debounce = Timer(const Duration(milliseconds: 300), () async {
+            await ref.read(journalProvider.notifier).setSearchQuery(value);
           });
         },
-      ),
-    );
-  }
-
-  Widget _buildBody(BuildContext context, List<JournalEntry> entries, bool viewMode, Palette palette, JournalNotifier journalNotifier) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height, // Full height to ensure scrolling works
-      child: Stack(
-        children: [
-          _buildPromptBackground(context),
-          if (entries.isNotEmpty)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                  child: Container(color: palette.lightGray.withOpacity(0.1)),
-                ),
-              ),
-            ),
-          Column(
-            children: [
-              if (journalNotifier.filterDate != null)
-                _buildFilterInfo(context, journalNotifier.filterDate!, palette),
-              Expanded(
-                child: viewMode ? _buildGridView(entries) : _buildListView(entries),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -145,7 +154,7 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
     final palette = injector.palette;
     return Container(
       alignment: Alignment.center,
-      padding: const EdgeInsets.all(80),
+      padding: EdgeInsets.all(20.pw(context)),
       color: palette.lightGray,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -154,25 +163,30 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
             "Start Journaling",
             style: Theme.of(context).textTheme.displayLarge?.copyWith(
                   color: palette.primaryColor,
+                  fontSize: 24.ww(context),
                 ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 2.ph(context)),
           Text(
             _currentPrompt,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: palette.textColor.withOpacity(0.7),
                   fontWeight: FontWeight.w600,
+                  fontSize: 16.ww(context),
                 ),
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterInfo(BuildContext context, DateTime filterDate, Palette palette) {
+  Widget _buildFilterInfo(
+      BuildContext context, DateTime filterDate, Palette palette) {
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(2.pw(context)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -180,16 +194,18 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
             'Filtered by: ${DateFormat('MMM dd, yyyy').format(filterDate)}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: palette.textColor.withOpacity(0.7),
+                  fontSize: 14.ww(context),
                 ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 2.pw(context)),
           IconButton(
             icon: Icon(
               Icons.clear,
-              size: 20,
+              size: 20.ww(context),
               color: palette.textColor.withOpacity(0.7),
             ),
-            onPressed:  () async => await ref.read(journalProvider.notifier).setFilterDate(null),
+            onPressed: () async =>
+                await ref.read(journalProvider.notifier).setFilterDate(null),
           ),
         ],
       ),
@@ -197,21 +213,23 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
   }
 
   Widget _buildListView(List<JournalEntry> entries) {
-    return ListView.builder(
-      itemCount: entries.length,
-      itemBuilder: (context, index) => _buildCard(entries[index]),
+    return Column(
+      children: entries.map((entry) => _buildCard(entry)).toList(),
     );
   }
 
   Widget _buildGridView(List<JournalEntry> entries) {
     return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      shrinkWrap: true, // Let grid take only needed space
+      physics:
+          const NeverScrollableScrollPhysics(), // Disable grid's own scrolling
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.85,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        crossAxisSpacing: 2.pw(context),
+        mainAxisSpacing: 2.ph(context),
       ),
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(2.pw(context)),
       itemCount: entries.length,
       itemBuilder: (context, index) => _buildCard(entries[index]),
     );
@@ -230,7 +248,7 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
       backgroundColor: palette.secondaryColor,
       foregroundColor: palette.pureWhite,
       elevation: 6,
-      child: const Icon(Icons.add, size: 28),
+      child: Icon(Icons.add, size: 28.ww(context)),
       onPressed: () => _showPromptDialog(context, null),
     );
   }
@@ -241,17 +259,16 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: Container(
           height: MediaQuery.of(context).size.height * 0.8,
           decoration: BoxDecoration(
             color: injector.palette.pureWhite,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(5.pw(context))),
           ),
-          child: JournalEditor(
-            // prompt: entry == null ? "Describe a moment you felt proud" : "",
-            entry: entry,
-          ),
+          child: JournalEditor(entry: entry),
         ),
       ),
     );
@@ -262,22 +279,26 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Delete Entry', style: Theme.of(context).textTheme.titleLarge),
+        title: Text('Delete Entry', style: TextStyle(fontSize: 18.ww(context))),
         content: Text(
           'Are you sure you want to delete this journal entry?',
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: TextStyle(fontSize: 14.ww(context)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: palette.textColor)),
+            child: Text('Cancel',
+                style: TextStyle(
+                    color: palette.textColor, fontSize: 14.ww(context))),
           ),
           TextButton(
             onPressed: () {
-              ref.read(journalProvider.notifier).deleteEntry( entry.id);
+              ref.read(journalProvider.notifier).deleteEntry(entry.id);
               Navigator.pop(ctx);
             },
-            child: Text('Delete', style: TextStyle(color: palette.accentColor)),
+            child: Text('Delete',
+                style: TextStyle(
+                    color: palette.accentColor, fontSize: 14.ww(context))),
           ),
         ],
       ),
@@ -289,7 +310,8 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Filter by Date', style: Theme.of(context).textTheme.titleLarge),
+        title:
+            Text('Filter by Date', style: TextStyle(fontSize: 18.ww(context))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -297,6 +319,9 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: palette.primaryColor,
                 foregroundColor: palette.pureWhite,
+                padding: EdgeInsets.symmetric(
+                    horizontal: 4.pw(context), vertical: 2.ph(context)),
+                textStyle: TextStyle(fontSize: 14.ww(context)),
               ),
               onPressed: () async {
                 final picked = await showDatePicker(
@@ -314,8 +339,10 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
                     child: child!,
                   ),
                 );
-                if (picked != null)  {
-                await  ref.read(journalProvider.notifier).setFilterDate(picked);
+                if (picked != null) {
+                  await ref
+                      .read(journalProvider.notifier)
+                      .setFilterDate(picked);
                   Navigator.pop(ctx);
                 }
               },
@@ -323,17 +350,21 @@ class JournalScreenState extends ConsumerState<JournalScreen> {
             ),
             TextButton(
               onPressed: () async {
-               await ref.read(journalProvider.notifier).setFilterDate(null);
+                await ref.read(journalProvider.notifier).setFilterDate(null);
                 Navigator.pop(ctx);
               },
-              child: Text('Clear Filter', style: TextStyle(color: palette.textColor)),
+              child: Text('Clear Filter',
+                  style: TextStyle(
+                      color: palette.textColor, fontSize: 14.ww(context))),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Close', style: TextStyle(color: palette.textColor)),
+            child: Text('Close',
+                style: TextStyle(
+                    color: palette.textColor, fontSize: 14.ww(context))),
           ),
         ],
       ),

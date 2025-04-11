@@ -20,7 +20,7 @@ final expansionProvider =
 final relaxationScreenProvider =
     Provider.family((ref, String? suggestedExerciseId) {
   final progress = ref.watch(gamificationProvider);
-  final controller = ref.watch( relaxationControllerProvider);
+  final controller = ref.watch(relaxationControllerProvider);
   final currentLevel = progress.level;
   final levelExercises = levelRelaxations[currentLevel] ?? [];
 
@@ -47,11 +47,11 @@ final relaxationScreenProvider =
               SnackBar(
                 content: Text(message),
                 backgroundColor:
-                    message.contains('booster') ? Colors.green : Colors.grey,
+                    message.contains('no ') ? Colors.black : Colors.green,
               ),
             ),
           );
-              ref.read(gamificationProvider.notifier).refresh();
+          ref.read(gamificationProvider.notifier).refresh();
         });
   }
 
@@ -59,7 +59,12 @@ final relaxationScreenProvider =
     (e) => e.id == suggestedExerciseId,
     orElse: () => levelExercises.isNotEmpty
         ? levelExercises[0]
-        : Relaxation(id: 'default', title: 'No Exercise', level: currentLevel),
+        : Relaxation(
+            id: 'default',
+            title: 'No Exercise',
+            level: currentLevel,
+            description: "",
+            duration: 0),
   );
   final otherExercises =
       levelExercises.where((e) => e.id != suggestedExerciseId).toList();

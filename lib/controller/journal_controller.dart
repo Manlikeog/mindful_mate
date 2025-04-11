@@ -36,21 +36,28 @@ class JournalController {
   }
 
   Future<void> saveJournalEntry(
-    BuildContext context,
-    JournalEntry entry, {
-    required UserProgress progress,
-    required Function(String) onFeedback,
-  }) async {
-    await _dbHelper.saveJournalEntry(entry);
-    final updatedProgress = _gamificationController.logActivity(
-      context: context,
-      progress: progress,
-      activityType: 'journal',
-      activityDate: entry.date
-    );
-    _gamificationController.saveUserProgress(updatedProgress);
-    onFeedback('Journal entry saved successfully!');
-  }
+  BuildContext context,
+  JournalEntry entry, {
+  required UserProgress progress,
+  required Function(String) onFeedback,
+}) async {
+  await _dbHelper.saveJournalEntry(entry);
+  final updatedProgress = _gamificationController.logActivity(
+    context: context,
+    progress: progress,
+    activityType: 'journal',
+    activityDate: entry.date, // Pass the entry date
+  );
+  await _gamificationController.saveUserProgress(updatedProgress);
+  final isToday = isSameDay(entry.date, DateTime.now());
+ final pointsAwarded = updatedProgress.totalPoints - progress.totalPoints;
+  final feedback = isToday
+      ? pointsAwarded <= 0
+          ? 'Journal updated for today, no additional points awarded.'
+          : 'Journal entry saved! +3 points'
+      : 'Previous day journal logged, no points awarded.';
+  onFeedback(feedback);
+}
 
   Future<void> deleteJournalEntry(String id) async {
     await _dbHelper.deleteJournalEntry(id);

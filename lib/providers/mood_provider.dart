@@ -11,7 +11,8 @@ final moodControllerProvider = Provider((ref) {
   return MoodController(dbHelper, ref: ref);
 });
 
-final moodProvider = StateNotifierProvider<MoodNotifier, Map<DateTime, MoodEntry>>((ref) {
+final moodProvider =
+    StateNotifierProvider<MoodNotifier, Map<DateTime, MoodEntry>>((ref) {
   return MoodNotifier(ref);
 });
 
@@ -73,7 +74,7 @@ class MoodNotifier extends StateNotifier<Map<DateTime, MoodEntry>> {
       onFeedback: (message) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: message.contains('booster') ? Colors.green : Colors.grey,
+          backgroundColor: message.contains('no ') ? Colors.black : Colors.green,
         ),
       ),
     );

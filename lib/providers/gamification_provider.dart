@@ -2,60 +2,53 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mindful_mate/controller/gamification_controller.dart';
 import 'package:mindful_mate/data/model/progress_card/user_progress.dart';
-import 'package:mindful_mate/providers/data_provider.dart';
+import 'package:mindful_mate/providers/progress_provider.dart';
+import 'package:mindful_mate/utils/error_logger.dart';
 
+/// Provides access to the gamification controller.
 final gamificationControllerProvider = Provider((ref) {
-  final dbHelper = ref.watch(databaseHelperProvider);
-  return GamificationController(dbHelper);
+  return GamificationController();
 });
 
-final gamificationProvider = StateNotifierProvider<GamificationNotifier, UserProgress>((ref) {
-  return GamificationNotifier(ref);
+/// Provides gamification actions like logging activities.
+final gamificationProvider = Provider<Gamification>((ref) {
+  return Gamification(ref);
 });
 
-class GamificationNotifier extends StateNotifier<UserProgress> {
-  final Ref ref;
+/// Handles gamification actions, updating user progress as needed.
+class Gamification {
+  final Ref providerRef;
 
-  GamificationNotifier(this.ref) : super(UserProgress()) {
-    _loadProgress();
-  }
+  Gamification(this.providerRef);
 
-  Future<void> _loadProgress() async {
-    final controller = ref.read(gamificationControllerProvider);
-    try {
-      final progress = await controller.fetchUserProgress();
-      state = progress;
-      print('Loaded progress: ${progress.challengeProgress}');
-    } catch (e) {
-      print('Initial progress load failed: $e');
-    }
-  }
-
-  Future<void> refresh() async {
-    final controller = ref.read(gamificationControllerProvider);
-    final progress = await controller.fetchUserProgress();
-    state = progress;
-    print('Refreshed progress: ${progress.challengeProgress}');
-  }
-
-  Future<void> logActivity(
+  Future<UserProgress> logActivity(
     BuildContext context, {
     required String activityType,
     String? suggestedRelaxation,
     String? completedRelaxation,
     DateTime? activityDate,
+    bool isSuggested = false,
   }) async {
-    final controller = ref.read(gamificationControllerProvider);
+    final controller = providerRef.read(gamificationControllerProvider);
+    // Wait for progress to load
+    // Ensures latest progress is loaded
+    final progress = providerRef.read(userProgressProvider);
+
+    ErrorLogger.logError(
+        'Progress before log: level=${progress.level}, points=${progress.totalPoints}');
     final updatedProgress = controller.logActivity(
       context: context,
-      progress: state,
+      progress: progress,
       activityType: activityType,
       suggestedRelaxation: suggestedRelaxation,
       completedRelaxation: completedRelaxation,
       activityDate: activityDate,
+      isSuggested: isSuggested,
     );
-    state = updatedProgress;
-    await controller.saveUserProgress(updatedProgress);
-    print('Logged activity: ${updatedProgress.challengeProgress}');
+    providerRef.read(userProgressProvider.notifier).update(updatedProgress);
+    await providerRef.read(userProgressProvider.notifier).saveProgress();
+    ErrorLogger.logError(
+        'Logged activity: ${updatedProgress.challengeProgress}');
+    return updatedProgress;
   }
 }

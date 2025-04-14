@@ -6,6 +6,7 @@ import 'package:lottie/lottie.dart'; // Added for animations
 import 'package:mindful_mate/screens/home/home_screen.dart';
 import 'package:mindful_mate/screens/onboarding/widgets/onboarding_bottom_controls.dart';
 import 'package:mindful_mate/screens/onboarding/widgets/onboarding_page.dart';
+import 'package:mindful_mate/screens/progress/progress_screen.dart';
 import 'package:mindful_mate/utils/app_settings/images_strings.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
@@ -47,11 +48,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   Widget build(BuildContext context) {
     final currentPage = useState<int>(0);
 
-
     final onboardingList = [
       OnboardingPage(
         title: "Track Your Mood Effortlessly",
-        description:  "Log daily emotions with simple emoji selections",
+        description: "Log daily emotions with simple emoji selections",
         animation: Lottie.asset(
           onBoardingImageFirstPage,
           width: 300.ww(context),
@@ -59,7 +59,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         ),
       ),
       OnboardingPage(
-        title:  "Reflect with Guided Journaling",
+        title: "Reflect with Guided Journaling",
         description: "Daily prompts to help you process thoughts",
         animation: Lottie.asset(
           onBoardingImageSecondPage,
@@ -79,7 +79,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     ];
 
     return Scaffold(
-      
       body: Column(
         children: [
           Expanded(
@@ -109,7 +108,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
             totalPages: onboardingList.length,
             onContinue: () => _handleContinue(currentPage),
             onSkip: () => _handleSkip(),
-
           ),
         ],
       ),
@@ -134,6 +132,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     print("ok");
     injector.quickStorage
         .storeBool(key: ObjectKeys.firstTimeLaunch, data: true);
-    context.go(HomeScreen.fullPath);
+    context.go(ProgressScreen.fullPath);
   }
 }

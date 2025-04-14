@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'challenge.g.dart';
 
+/// Represents a gamification challenge with a goal and rewards.
 @HiveType(typeId: 2)
 class Challenge {
   @HiveField(0)
@@ -39,9 +40,32 @@ class Challenge {
     required this.endDate,
   });
 
+  /// Checks if the challenge is active on the given date.
   bool isActive(DateTime now) {
-    return now.isAfter(startDate) &&
-        now.isBefore(endDate.add(Duration(days: 1)));
+    return now.isAfter(startDate) && now.isBefore(endDate.add(const Duration(days: 1)));
+  }
+
+  /// Creates a copy with updated fields.
+  Challenge copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? type,
+    int? goal,
+    int? points,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    return Challenge(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      type: type ?? this.type,
+      goal: goal ?? this.goal,
+      points: points ?? this.points,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+    );
   }
 }
 
@@ -54,8 +78,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 3,
       type: 'mood_log',
       points: 30,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -65,8 +88,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 2,
       type: 'relaxation',
       points: 30,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -76,8 +98,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 3,
       type: 'journal',
       points: 40,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -87,8 +108,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 3,
       type: 'relaxation',
       points: 20,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
   ],
@@ -100,8 +120,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 5,
       type: 'mood_log',
       points: 50,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -111,8 +130,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 3,
       type: 'relaxation',
       points: 50,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -122,8 +140,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 4,
       type: 'journal',
       points: 60,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -133,8 +150,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 3,
       type: 'relaxation',
       points: 30,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
   ],
@@ -146,8 +162,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 7,
       type: 'mood_log',
       points: 70,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -157,8 +172,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 4,
       type: 'relaxation',
       points: 70,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -168,8 +182,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 5,
       type: 'journal',
       points: 70,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
     Challenge(
@@ -179,8 +192,7 @@ final Map<int, List<Challenge>> levelChallenges = {
       goal: 4,
       type: 'relaxation',
       points: 50,
-      startDate:
-          DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
+      startDate: DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)),
       endDate: DateTime.now().add(Duration(days: 6 - DateTime.now().weekday)),
     ),
   ],

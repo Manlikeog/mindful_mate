@@ -7,7 +7,7 @@ class ErrorLogger {
   static final Logger _logger = Logger();
 
   static void logError(String message, [Object? error, StackTrace? stackTrace]) {
-    _logger.e(message, error: error, stackTrace: stackTrace);
+    _logger.i(message, error: error, stackTrace: stackTrace);
   }
 
   static void showAndLogError(BuildContext context, String message, [Object? error, StackTrace? stackTrace]) {

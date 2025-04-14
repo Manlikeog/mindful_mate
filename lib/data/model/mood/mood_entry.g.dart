@@ -25,11 +25,13 @@ class MoodEntryAdapter extends TypeAdapter<MoodEntry> {
   @override
   void write(BinaryWriter writer, MoodEntry obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.date)
       ..writeByte(1)
-      ..write(obj.moodRating);
+      ..write(obj.moodRating)
+      ..writeByte(2)
+      ..write(obj.key);
   }
 
   @override

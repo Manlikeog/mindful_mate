@@ -6,6 +6,7 @@ import 'package:mindful_mate/providers/calendar_provider.dart';
 import 'package:mindful_mate/providers/mood_provider.dart';
 import 'package:mindful_mate/screens/mood/utils/mood_util.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
+import 'package:mindful_mate/utils/date_utils.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class TrendChart extends ConsumerWidget {

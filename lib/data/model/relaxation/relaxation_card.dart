@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mindful_mate/data/model/relaxation/relaxation.dart';
 
+/// Represents data for a relaxation card UI component.
 class RelaxationCardData {
-  final Relaxation exercise; // Assuming this is your Relaxation object
+  final Relaxation exercise;
   final bool isSuggested;
-  bool isExpanded;
+   bool isExpanded;
   final bool isCompletedToday;
-  final Function toggleExpansion;
+  final VoidCallback toggleExpansion;
   final Function(BuildContext) completeRelaxation;
 
   RelaxationCardData({

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mindful_mate/data/model/progress_card/progress_card.dart';
-import 'package:mindful_mate/providers/progress_provider.dart';
+import 'package:mindful_mate/providers/progress_card_provider.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/app_settings/palette.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';

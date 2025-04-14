@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mindful_mate/data/model/journal/journal_entry.dart';
 import 'package:mindful_mate/providers/journal_provider.dart';
@@ -7,7 +7,6 @@ import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/app_settings/palette.dart';
 import 'package:mindful_mate/utils/app_widget/custom_app_button.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
-import 'package:mindful_mate/utils/extension/widget_extension.dart';
 
 class JournalEditor extends ConsumerStatefulWidget {
   final JournalEntry? entry; // For editing existing entries
@@ -15,10 +14,10 @@ class JournalEditor extends ConsumerStatefulWidget {
   const JournalEditor({this.entry, super.key});
 
   @override
-  _JournalEditorState createState() => _JournalEditorState();
+  JournalEditorState createState() => JournalEditorState();
 }
 
-class _JournalEditorState extends ConsumerState<JournalEditor> {
+class JournalEditorState extends ConsumerState<JournalEditor> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
   int? _selectedMoodIndex;

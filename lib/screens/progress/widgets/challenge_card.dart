@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mindful_mate/data/model/progress_card/progress_card.dart';
-import 'package:mindful_mate/providers/progress_provider.dart';
+import 'package:mindful_mate/providers/progress_card_provider.dart';
 import 'package:mindful_mate/screens/chanllenges/chanllenge_screen.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mindful_mate/providers/progress_provider.dart';
+import 'package:mindful_mate/providers/progress_card_provider.dart';
 import 'package:mindful_mate/screens/chanllenges/chanllenge_screen.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 

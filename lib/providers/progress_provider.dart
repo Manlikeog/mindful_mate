@@ -1,52 +1,45 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mindful_mate/data/model/challenge/challenge.dart';
-import 'package:mindful_mate/data/model/progress_card/progress_card.dart';
-import 'package:mindful_mate/providers/challenge_provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:mindful_mate/controller/user_progress_controller.dart';
+import 'package:mindful_mate/data/model/progress_card/user_progress.dart';
+import 'package:mindful_mate/data/repository/database_helper.dart';
 
-import 'package:mindful_mate/providers/gamification_provider.dart';
+/// Provides access to the Hive database helper.
+final databaseHelperProvider = Provider((ref) => HiveDatabaseHelper());
 
-final progressCardDataProvider = Provider<ProgressCardData>((ref) {
-  final progress = ref.watch(gamificationProvider);
-  final challenges = ref.watch(challengesProvider);
-  final currentLevel = progress.level;
-  final now = DateTime.now();
-  final activeChallenges = challenges.where((c) => c.isActive(now)).toList();
-  final levelName = getLevelName(progress.level);
-  final levelTotalPoints = getLevelTotalPoints(progress.level);
-  final passMark = getPassMark(progress.level);
-  final progressPercentage = levelTotalPoints > 0
-      ? (progress.totalPoints / levelTotalPoints).clamp(0.0, 1.0)
-      : 0.0;
-
-  print('progressCardDataProvider: Level $currentLevel, Active Challenges: ${activeChallenges.length}');
-  return ProgressCardData(
-    levelName: levelName,
-    levelTotalPoints: levelTotalPoints,
-    passMark: passMark,
-    userProgress: progress,
-    progressPercentage: progressPercentage,
-    activeChallenges: activeChallenges,
-    level: currentLevel,
-  );
+/// Provides access to the user progress controller.
+final userProgressControllerProvider = Provider((ref) {
+  final dbHelper = ref.watch(databaseHelperProvider);
+  return UserProgressController(dbHelper);
 });
 
-String getLevelName(int level) {
-  switch (level) {
-    case 1:
-      return 'Beginner';
-    case 2:
-      return 'Explorer';
-    case 3:
-      return 'Champion';
-    default:
-      return 'Legend ${level - 3}';
+/// Provides user progress state and data operations.
+final userProgressProvider =
+    StateNotifierProvider<UserProgressNotifier, UserProgress>((ref) {
+  return UserProgressNotifier(ref);
+});
+
+/// Manages user progress state with loading and refreshing capabilities.
+class UserProgressNotifier extends StateNotifier<UserProgress> {
+  final Ref providerRef;
+
+  UserProgressNotifier(this.providerRef) : super(UserProgress()) {
+    _loadProgress();
   }
-}
 
-int getLevelTotalPoints(int level) {
-  return levelPoints[level] ?? 0;
-}
+  Future<void> _loadProgress() async {
+    final controller = providerRef.read(userProgressControllerProvider);
+    state = await controller.fetchUserProgress();
+  }
 
-int getPassMark(int level) {
-  return passMarks[level] ?? 0;
+  Future<void> refresh() async {
+    final controller = providerRef.read(userProgressControllerProvider);
+    state = await controller.fetchUserProgress();
+  }
+
+  Future<void> saveProgress() async {
+    final controller = providerRef.read(userProgressControllerProvider);
+    await controller.saveUserProgress(state);
+  }
+
+  void update(UserProgress progress) => state = progress;
 }

@@ -1,7 +1,8 @@
 import 'package:hive/hive.dart';
 
-part 'journal_entry.g.dart'; // This will be generated
+part 'journal_entry.g.dart';
 
+/// Represents a journal entry with text and formatting options.
 @HiveType(typeId: 0)
 class JournalEntry {
   @HiveField(0)
@@ -34,4 +35,25 @@ class JournalEntry {
     this.isBold = false,
     this.isItalic = false,
   });
+
+  /// Creates a copy with updated fields.
+  JournalEntry copyWith({
+    String? id,
+    DateTime? date,
+    String? title,
+    String? content,
+    int? moodIndex,
+    bool? isBold,
+    bool? isItalic,
+  }) {
+    return JournalEntry(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      moodIndex: moodIndex ?? this.moodIndex,
+      isBold: isBold ?? this.isBold,
+      isItalic: isItalic ?? this.isItalic,
+    );
+  }
 }

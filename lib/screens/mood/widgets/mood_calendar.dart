@@ -5,6 +5,7 @@ import 'package:mindful_mate/providers/calendar_provider.dart';
 import 'package:mindful_mate/providers/mood_provider.dart';
 import 'package:mindful_mate/screens/mood/utils/mood_util.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
+import 'package:mindful_mate/utils/date_utils.dart' as date_utils;
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -46,7 +47,7 @@ class _MoodCalendarState extends ConsumerState<MoodCalendar> {
           lastDay: DateTime.now(),
           focusedDay: currentDisplayedDate,
           selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-          calendarFormat: viewMode == CalendarViewMode.weekly ? CalendarFormat.week : CalendarFormat.month,
+          calendarFormat: viewMode == date_utils.CalendarViewMode.weekly ? CalendarFormat.week : CalendarFormat.month,
           calendarStyle: CalendarStyle(
             cellMargin: EdgeInsets.all(1.pw(context)), // Scaled cell margin
             defaultTextStyle: TextStyle(fontSize: 12.ww(context)), // Scaled text

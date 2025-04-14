@@ -1,3 +1,4 @@
+/// Represents data for an insight card UI component.
 class InsightCardData {
   final String title;
   final String insightText;

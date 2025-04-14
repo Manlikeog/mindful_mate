@@ -3,10 +3,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:mindful_mate/providers/calendar_provider.dart';
 import 'package:mindful_mate/providers/mood_provider.dart';
 import 'package:mindful_mate/screens/mood/widgets/mood_picker.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:mindful_mate/utils/date_utils.dart';
 
 
 

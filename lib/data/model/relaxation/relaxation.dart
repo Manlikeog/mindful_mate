@@ -1,7 +1,8 @@
 import 'package:hive/hive.dart';
 
-part 'relaxation.g.dart'; // Will be generated
+part 'relaxation.g.dart';
 
+/// Represents a relaxation exercise with details.
 @HiveType(typeId: 4)
 class Relaxation {
   @HiveField(0)
@@ -16,8 +17,8 @@ class Relaxation {
   @HiveField(3)
   final int duration;
 
-  @HiveField(4) // Duration in minutes
-  final String description; // Full instructions
+  @HiveField(4)
+  final String description;
 
   Relaxation({
     required this.id,
@@ -26,6 +27,23 @@ class Relaxation {
     required this.duration,
     required this.description,
   });
+
+  /// Creates a copy with updated fields.
+  Relaxation copyWith({
+    String? id,
+    String? title,
+    int? level,
+    int? duration,
+    String? description,
+  }) {
+    return Relaxation(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      level: level ?? this.level,
+      duration: duration ?? this.duration,
+      description: description ?? this.description,
+    );
+  }
 }
 
 final Map<int, List<Relaxation>> levelRelaxations = {

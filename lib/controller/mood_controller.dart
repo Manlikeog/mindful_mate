@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mindful_mate/controller/gamification_controller.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mindful_mate/data/model/mood/mood_entry.dart';
-import 'package:mindful_mate/data/repository/database_helper.dart';
 import 'package:mindful_mate/data/model/progress_card/user_progress.dart';
-import 'package:mindful_mate/providers/data_provider.dart';
+import 'package:mindful_mate/data/repository/database_helper.dart';
 import 'package:mindful_mate/providers/gamification_provider.dart';
+import 'package:mindful_mate/utils/date_utils.dart';
+import 'package:mindful_mate/utils/error_logger.dart';
 
+/// Manages mood logging and retrieval operations.
 class MoodController {
-  final DatabaseHelper _db;
-  final GamificationController _gamificationController;
-  final Ref? ref;
+  final DatabaseHelper _databaseHelper;
+  final Ref providerRef;
 
-  MoodController(this._db, {this.ref})
-      : _gamificationController = GamificationController(_db);
+  MoodController(
+    this._databaseHelper,
+    this.providerRef,
+  );
 
+  /// Fetches all mood entries from the database.
   Future<List<MoodEntry>> fetchMoodEntries() async {
-    return await _db.getMoodEntries();
+    return await _databaseHelper.getMoodEntries();
   }
 
+  /// Logs a mood entry and updates user progress.
   Future<void> logMood({
     required MoodEntry entry,
     required BuildContext context,
@@ -26,19 +30,13 @@ class MoodController {
     required Function(String) onFeedback,
   }) async {
     try {
-      await _db.saveMoodEntry(entry); // Save or overwrite the mood entry
-
-      final updatedProgress = _gamificationController.logActivity(
-        context: context,
-        progress: progress,
-        activityType: 'mood_log',
-        activityDate: entry.date,
-      );
-      await _gamificationController.saveUserProgress(updatedProgress);
-      if (ref != null) {
-        ref!.read(gamificationProvider.notifier).state = updatedProgress;
-      }
-      print('lol');
+      await _databaseHelper.saveMoodEntry(entry);
+      final updatedProgress =
+          await providerRef.read(gamificationProvider).logActivity(
+                context,
+                activityType: 'mood_log',
+                activityDate: entry.date,
+              );
       final isToday = isSameDay(entry.date, DateTime.now());
       final pointsAwarded = updatedProgress.totalPoints - progress.totalPoints;
       final feedback = isToday
@@ -48,19 +46,10 @@ class MoodController {
           : 'Previous day mood logged but no points awarded.';
       onFeedback(feedback);
     } catch (e) {
-      onFeedback('Failed to log mood: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to log mood: $e')),
+      ErrorLogger.logError(
+        'Failed to log mood: $e',
       );
+      onFeedback('Failed to log mood:');
     }
   }
-
-  bool isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
 }
-
-final moodControllerProvider = Provider((ref) {
-  final dbHelper = ref.watch(databaseHelperProvider);
-  return MoodController(dbHelper, ref: ref);
-});

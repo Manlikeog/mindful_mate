@@ -52,7 +52,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           key: ObjectKeys.firstTimeLaunch,
         );
 
-
         if (mounted) {
           if (isItAFirstTimeLaunch == false) {
             context.go(
@@ -62,9 +61,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             if (kDebugMode) {
               print('its here');
             }
-            context.go(
-              ProgressScreen.fullPath
-            );
+            context.go(ProgressScreen.fullPath);
           }
         }
 
@@ -96,7 +93,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               duration: const Duration(milliseconds: 1000),
               opacity: 1.0,
               child: Text(
-               "MindfulMate",
+                "MindfulMate",
                 style: GoogleFonts.poppins(
                   color: injector.palette.pureWhite,
                   fontSize: 32,
@@ -109,7 +106,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               valueColor:
                   AlwaysStoppedAnimation<Color>(injector.palette.accentColor),
               strokeWidth: 2.ww(context),
-              
             ),
           ],
         ),

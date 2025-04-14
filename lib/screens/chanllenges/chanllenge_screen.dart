@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mindful_mate/providers/gamification_provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mindful_mate/data/model/challenge/challenge.dart';
+import 'package:mindful_mate/providers/progress_provider.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
@@ -15,7 +15,7 @@ class ChallengesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = injector.palette;
-    final progress = ref.watch(gamificationProvider);
+    final progress = ref.watch(userProgressProvider);
     final currentLevel = progress.level;
     final challenges = levelChallenges[currentLevel] ?? [];
     final screenWidth = MediaQuery.of(context).size.width;

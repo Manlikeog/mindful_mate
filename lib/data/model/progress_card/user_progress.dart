@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'user_progress.g.dart';
 
+/// Stores user progress for gamification features.
 @HiveType(typeId: 1)
 class UserProgress {
   @HiveField(0)
@@ -40,8 +41,8 @@ class UserProgress {
   @HiveField(11)
   final List<DateTime> journalLogDates;
 
-  @HiveField(12) // New field
-  final List<DateTime> relaxationLogDates; // Tracks all relaxation days
+  @HiveField(12)
+  final List<DateTime> relaxationLogDates;
 
   UserProgress({
     this.level = 1,
@@ -59,6 +60,7 @@ class UserProgress {
     this.relaxationLogDates = const [],
   });
 
+  /// Creates a copy with updated fields.
   UserProgress copyWith({
     int? level,
     int? totalPoints,

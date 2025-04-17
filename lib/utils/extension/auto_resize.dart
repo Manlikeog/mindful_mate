@@ -10,7 +10,7 @@ extension AutoResize on num {
 
   double ww(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final scaledWidth = (this / 430) * screenWidth;
+    final scaledWidth = (this / 430) * screenWidth; 
     // Clamp to prevent extreme scaling
     return scaledWidth.clamp(10.0, screenWidth * 0.9);
   }

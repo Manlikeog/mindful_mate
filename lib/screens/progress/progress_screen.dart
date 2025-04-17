@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
-import 'package:mindful_mate/screens/chanllenges/chanllenge_screen.dart';
+
 import 'package:mindful_mate/screens/journal/journal_screen.dart';
 import 'package:mindful_mate/screens/mood/mood_screen.dart';
 import 'package:mindful_mate/screens/progress/widgets/challenge_card.dart';
 import 'package:mindful_mate/screens/progress/widgets/insight_card.dart';
 import 'package:mindful_mate/screens/progress/widgets/progress_card.dart';
-import 'package:mindful_mate/screens/relaxations/relaxation_screen.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/app_settings/palette.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';

@@ -9,7 +9,6 @@ import 'package:mindful_mate/utils/extension/widget_extension.dart';
 
 final Color textColor = injector.palette.textColor;
 
-const bool kDebugState = true;
 
 TextStyle kTextStyleCustom({
   required BuildContext context,
@@ -169,46 +168,5 @@ kToastMsgPopUp({
   );
 }
 
-SizedBox yMargin({
-  required double size,
-}) {
-  return SizedBox(
-    height: size,
-  );
-}
 
-SizedBox xMargin({required double size}) {
-  return SizedBox(
-    width: size,
-  );
-}
 
-class CXSpinner extends StatelessWidget {
-  const CXSpinner({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SizedBox(
-        height: 150.hh(context),
-        child: Lottie.asset('assets/loader.json').paddingOnly(
-          l: 20.ww(context),
-        ),
-      ),
-    );
-  }
-}
-
-// class CXLoader {
-//   static void show(BuildContext context) {
-//     return Loader.show(
-//       context,
-//       progressIndicator: const CXSpinner(),
-//       overlayColor: Colors.black54,
-//     );
-//   }
-
-//   static void hide() {
-//     return Loader.hide();
-//   }
-// }

@@ -3,21 +3,18 @@ import 'package:mindful_mate/data/model/progress_card/user_progress.dart';
 import 'package:mindful_mate/data/model/relaxation/relaxation.dart';
 import 'package:mindful_mate/utils/error_logger.dart';
 
-/// Manages challenge-related operations and progress updates.
 class ChallengeController {
-  /// Retrieves active challenges for the user's level.
   List<Challenge> getChallengesForLevel(UserProgress progress) {
     final now = DateTime.now();
     final challenges = levelChallenges[progress.level]
             ?.where((c) => c.isActive(now))
             .toList() ??
         [];
-    ErrorLogger.logError(
-        'Level ${progress.level} challenges: ${challenges.map((c) => "${c.title} (${c.type})").toList()}');
+    log('Level ${progress.level} challenges: ${challenges.map((c) => "${c.title} (${c.type})").toList()}',
+        level: 'info');
     return challenges;
   }
 
-  /// Updates challenge progress based on activity.
   UserProgress updateChallengeProgress({
     required UserProgress progress,
     required String activityType,
@@ -28,8 +25,8 @@ class ChallengeController {
         .where((c) => c.isActive(now) && c.type == activityType)
         .toList();
 
-    ErrorLogger.logError(
-        'Active challenges for $activityType: ${activeChallenges.map((c) => "${c.title} (${c.type})").toList()}');
+    log('Active challenges for $activityType: ${activeChallenges.map((c) => "${c.title} (${c.type})").toList()}',
+        level: 'info');
 
     var updatedProgress = progress;
 
@@ -55,8 +52,8 @@ class ChallengeController {
 
         if (shouldIncrement) {
           final newProgress = currentProgress + 1;
-          ErrorLogger.logError(
-              'Challenge ${challenge.id}: Progress $currentProgress -> $newProgress (Goal: ${challenge.goal}, Relaxation: $completedRelaxation)');
+          log('Challenge ${challenge.id}: Progress $currentProgress -> $newProgress (Goal: ${challenge.goal}, Relaxation: $completedRelaxation)',
+              level: 'info');
           updatedProgress = updatedProgress.copyWith(
             challengeProgress: {
               ...updatedProgress.challengeProgress,
@@ -65,8 +62,8 @@ class ChallengeController {
           );
           if (newProgress >= challenge.goal &&
               !updatedProgress.completedChallenges.contains(challenge.id)) {
-            ErrorLogger.logError(
-                'Challenge ${challenge.id} completed! Points added: ${challenge.points}');
+            log('Challenge ${challenge.id} completed! Points added: ${challenge.points}',
+                level: 'info');
             updatedProgress = updatedProgress.copyWith(
               totalPoints: updatedProgress.totalPoints + challenge.points,
               completedChallenges: [
@@ -76,8 +73,8 @@ class ChallengeController {
             );
           }
         } else {
-          ErrorLogger.logError(
-              'Challenge ${challenge.id}: No increment (Activity: $activityType, Relaxation: $completedRelaxation)');
+          log('Challenge ${challenge.id}: No increment (Activity: $activityType, Relaxation: $completedRelaxation)',
+              level: 'info');
         }
       }
     }

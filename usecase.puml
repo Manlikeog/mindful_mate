@@ -1,0 +1,11 @@
+@startuml mindful_mate_usecase
+actor User
+
+User --> (Log Mood)
+User --> (Write Journal)
+User --> (Complete Relaxation Exercise)
+User --> (View Challenges)
+User --> (Track Progress)
+User --> (View Mood Insights)
+
+@enduml

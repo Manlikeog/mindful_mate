@@ -52,7 +52,7 @@ final Map<int, List<Relaxation>> levelRelaxations = {
       id: 'breath_l1',
       title: 'Deep Breathing',
       level: 1,
-      duration: 10,
+      duration: 0,
       description:
           'Sit comfortably, close your eyes, and take slow, deep breaths. Inhale through your nose for 4 seconds, hold for 4 seconds, and exhale through your mouth for 6 seconds. Repeat to calm your mind.',
     ),

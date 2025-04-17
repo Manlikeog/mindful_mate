@@ -36,26 +36,32 @@ dependencies:
   flutter_hooks: ^0.20.5
   fluttertoast: ^8.2.12
   gap: ^3.0.1
-  go_router: ^14.8.0
+  go_router: ^15.0.0
   google_fonts: ^6.2.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  
   hooks_riverpod: ^2.6.1
   intl: ^0.20.0
   logger: ^2.5.0
   lottie: ^3.3.1
+  mockito: ^5.4.5
   path_provider: ^2.1.5
+  provider: ^6.1.4
   shared_preferences: ^2.5.2
   table_calendar: ^3.2.0
   uuid: ^4.5.1
 
 dev_dependencies:
-  hive_generator: ^2.0.1
   build_runner: ^2.4.6
+  flutter_driver:
+    sdk: flutter
   flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
+  hive_generator: ^2.0.1
+  integration_test:
+    sdk: flutter
+  test: ^1.25.15
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

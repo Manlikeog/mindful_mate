@@ -6,13 +6,11 @@ import 'package:mindful_mate/data/model/progress_card/user_progress.dart';
 import 'package:mindful_mate/data/model/relaxation/relaxation.dart';
 import 'package:mindful_mate/utils/error_logger.dart';
 
-/// Exception thrown for database errors.
 class DatabaseException implements Exception {
   final String message;
   DatabaseException(this.message);
 }
 
-/// Interface for database operations.
 abstract class DatabaseHelper {
   Future<List<MoodEntry>> getMoodEntries();
   Future<void> saveMoodEntry(MoodEntry entry);
@@ -30,7 +28,6 @@ abstract class DatabaseHelper {
   Future<void> saveRelaxation(Relaxation relaxation);
 }
 
-/// Hive-based implementation of DatabaseHelper.
 class HiveDatabaseHelper implements DatabaseHelper {
   static final HiveDatabaseHelper _instance = HiveDatabaseHelper._internal();
   factory HiveDatabaseHelper() => _instance;
@@ -50,18 +47,31 @@ class HiveDatabaseHelper implements DatabaseHelper {
     try {
       return _moodBox.values.toList();
     } catch (e) {
-       ErrorLogger.logError('Failed to get mood entries: $e', );
+      ErrorLogger.logError('Failed to get mood entries: $e');
       throw DatabaseException('Unable to retrieve mood entries');
     }
   }
 
   @override
   Future<void> saveMoodEntry(MoodEntry entry) async {
+    final stopwatch = Stopwatch()..start();
     try {
       await _moodBox.put(entry.key, entry);
+      final retrieved = _moodBox.get(entry.key);
+      if (retrieved?.moodRating != entry.moodRating) {
+        ErrorLogger.logError(
+          'Integrity failure: Saved ${entry.moodRating}, Retrieved ${retrieved?.moodRating}',
+        );
+      }
+      ErrorLogger.logInfo(
+          'Saved mood entry in ${stopwatch.elapsedMilliseconds}ms');
     } catch (e) {
-       ErrorLogger.logError('Failed to save mood entry: $e', );
+      ErrorLogger.logError(
+        'Failed to save mood entry: $e',
+      );
       throw DatabaseException('Unable to save mood entry');
+    } finally {
+      stopwatch.stop();
     }
   }
 
@@ -70,7 +80,7 @@ class HiveDatabaseHelper implements DatabaseHelper {
     try {
       return _journalBox.values.toList();
     } catch (e) {
-       ErrorLogger.logError('Failed to get journal entries: $e', );
+      ErrorLogger.logError('Failed to get journal entries: $e');
       throw DatabaseException('Unable to retrieve journal entries');
     }
   }
@@ -84,8 +94,9 @@ class HiveDatabaseHelper implements DatabaseHelper {
   Future<void> saveJournalEntry(JournalEntry entry) async {
     try {
       await _journalBox.put(entry.id, entry);
+      ErrorLogger.logInfo('Saved journal entry');
     } catch (e) {
-       ErrorLogger.logError('Failed to save journal entry: $e', );
+      ErrorLogger.logError('Failed to save journal entry: $e');
       throw DatabaseException('Unable to save journal entry');
     }
   }
@@ -94,8 +105,9 @@ class HiveDatabaseHelper implements DatabaseHelper {
   Future<void> deleteJournalEntry(String id) async {
     try {
       await _journalBox.delete(id);
+      ErrorLogger.logInfo('Deleted journal entry: $id');
     } catch (e) {
-       ErrorLogger.logError('Failed to delete journal entry: $e', );
+      ErrorLogger.logError('Failed to delete journal entry: $e');
       throw DatabaseException('Unable to delete journal entry');
     }
   }
@@ -105,9 +117,17 @@ class HiveDatabaseHelper implements DatabaseHelper {
     try {
       if (_cachedProgress != null) return _cachedProgress!;
       _cachedProgress = _progressBox.get('current') ?? UserProgress();
+      final disk = _progressBox.get('current');
+      if (disk != null && _cachedProgress!.totalPoints != disk.totalPoints) {
+        log('Cache-disk mismatch: ${_cachedProgress!.totalPoints} vs ${disk.totalPoints}',
+            level: 'warning');
+        _cachedProgress = disk;
+      }
       return _cachedProgress!;
     } catch (e) {
-       ErrorLogger.logError('Failed to get user progress: $e', );
+      ErrorLogger.logError(
+        'Failed to get user progress: $e',
+      );
       throw DatabaseException('Unable to retrieve user progress');
     }
   }
@@ -122,8 +142,9 @@ class HiveDatabaseHelper implements DatabaseHelper {
     try {
       _cachedProgress = progress;
       await _progressBox.put('current', progress);
+      ErrorLogger.logInfo('Updated user progress');
     } catch (e) {
-       ErrorLogger.logError('Failed to update user progress: $e', );
+      ErrorLogger.logError('Failed to update user progress: $e');
       throw DatabaseException('Unable to update user progress');
     }
   }
@@ -133,7 +154,7 @@ class HiveDatabaseHelper implements DatabaseHelper {
     try {
       return _challengeBox.values.toList();
     } catch (e) {
-       ErrorLogger.logError('Failed to get challenges: $e', );
+      ErrorLogger.logError('Failed to get challenges: $e');
       throw DatabaseException('Unable to retrieve challenges');
     }
   }
@@ -142,8 +163,9 @@ class HiveDatabaseHelper implements DatabaseHelper {
   Future<void> saveChallenge(Challenge challenge) async {
     try {
       await _challengeBox.put(challenge.id, challenge);
+      ErrorLogger.logInfo('Saved challenge: ${challenge.id}');
     } catch (e) {
-       ErrorLogger.logError('Failed to save challenge: $e', );
+      ErrorLogger.logError('Failed to save challenge: $e');
       throw DatabaseException('Unable to save challenge');
     }
   }
@@ -152,8 +174,9 @@ class HiveDatabaseHelper implements DatabaseHelper {
   Future<void> deleteChallenge(String id) async {
     try {
       await _challengeBox.delete(id);
+      ErrorLogger.logInfo('Deleted challenge: $id');
     } catch (e) {
-       ErrorLogger.logError('Failed to delete challenge: $e', );
+      ErrorLogger.logError('Failed to delete challenge: $e');
       throw DatabaseException('Unable to delete challenge');
     }
   }
@@ -169,7 +192,7 @@ class HiveDatabaseHelper implements DatabaseHelper {
       }
       return _relaxationBox.values.toList();
     } catch (e) {
-       ErrorLogger.logError('Failed to get relaxations: $e', );
+      ErrorLogger.logError('Failed to get relaxations: $e');
       throw DatabaseException('Unable to retrieve relaxations');
     }
   }
@@ -178,8 +201,9 @@ class HiveDatabaseHelper implements DatabaseHelper {
   Future<void> saveRelaxation(Relaxation relaxation) async {
     try {
       await _relaxationBox.put(relaxation.id, relaxation);
+      ErrorLogger.logInfo('Saved relaxation: ${relaxation.id}');
     } catch (e) {
-       ErrorLogger.logError('Failed to save relaxation: $e', );
+      ErrorLogger.logError('Failed to save relaxation: $e');
       throw DatabaseException('Unable to save relaxation');
     }
   }

@@ -38,3 +38,4 @@ Map<DateTime, int> filterMoodData(
 }
 
 enum CalendarViewMode { weekly, monthly }
+

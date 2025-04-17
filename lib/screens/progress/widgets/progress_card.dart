@@ -6,6 +6,7 @@ import 'package:mindful_mate/providers/progress_card_provider.dart';
 import 'package:mindful_mate/utils/app_settings/injector.dart';
 import 'package:mindful_mate/utils/app_settings/palette.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
+import 'package:mindful_mate/utils/reward_popup.dart';
 
 class ProgressCard extends ConsumerWidget {
   const ProgressCard({super.key});

@@ -6,11 +6,6 @@ import 'package:mindful_mate/providers/progress_card_provider.dart';
 import 'package:mindful_mate/screens/chanllenges/chanllenge_screen.dart';
 import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mindful_mate/providers/progress_card_provider.dart';
-import 'package:mindful_mate/screens/chanllenges/chanllenge_screen.dart';
-import 'package:mindful_mate/utils/extension/auto_resize.dart';
 
 class ChallengeCard extends ConsumerWidget {
   const ChallengeCard({super.key});
@@ -19,7 +14,6 @@ class ChallengeCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progressData = ref.watch(progressCardDataProvider);
     final currentLevel = progressData.level;
-
     return Padding(
       padding: EdgeInsets.symmetric(
           horizontal: 4.pw(context), vertical: 2.ph(context)),

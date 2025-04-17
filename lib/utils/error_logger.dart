@@ -1,30 +1,38 @@
-// lib/utils/error_logger.dart
-import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:mindful_mate/utils/error_handler.dart';
 
-class ErrorLogger {
-  static final Logger _logger = Logger();
+final Logger _logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 80,
+    colors: true,
+    printEmojis: true,
+    printTime: false,
+  ),
+  output: ConsoleOutput(),
+);
 
-  static void logError(String message, [Object? error, StackTrace? stackTrace]) {
-    _logger.i(message, error: error, stackTrace: stackTrace);
-  }
-
-  static void showAndLogError(BuildContext context, String message, [Object? error, StackTrace? stackTrace]) {
-    ErrorHandler.showError(context, message);
-    logError(message, error, stackTrace);
-  }
-
-  static Future<T> handleAsyncWithLogging<T>(
-  BuildContext context,
-  Future<T> Function() operation, {
-  String errorMessage = 'An error occurred',
-}) async {
-  try {
-    return await operation();
-  } catch (e, stackTrace) {
-    showAndLogError(context, '$errorMessage: $e', e, stackTrace);
-    rethrow;
+void log(String message, {String level = 'info'}) {
+  switch (level.toLowerCase()) {
+    case 'error':
+      _logger.e(message);
+      break;
+    case 'warning':
+      _logger.w(message);
+      break;
+    case 'info':
+    default:
+      _logger.i(message);
+      break;
   }
 }
+
+class ErrorLogger {
+  static void logError(String message, [String? level]) {
+    log(message, level: level ?? 'error');
+  }
+
+  static void logInfo(String message) {
+    log(message, level: 'info');
+  }
 }

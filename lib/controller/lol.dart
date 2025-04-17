@@ -22,8 +22,7 @@ class GamificationController {
   }) {
     final stopwatch = Stopwatch()..start();
     try {
-      final now = DateTime.now();
-      final effectiveLogDate = activityDate ?? now;
+      final effectiveLogDate = activityDate ?? DateTime.now();
       final activityDay = DateTime(
         effectiveLogDate.year,
         effectiveLogDate.month,
@@ -33,35 +32,29 @@ class GamificationController {
       var updatedProgress = progress;
 
       if (activityType == 'mood_log') {
-        updatedProgress = _logMood(updatedProgress, activityDay, now);
+        updatedProgress = _logMood(updatedProgress, activityDay, effectiveLogDate);
       } else if (activityType == 'relaxation' && completedRelaxation != null) {
         updatedProgress = _logRelaxation(
           updatedProgress,
           completedRelaxation,
-          now,
+          effectiveLogDate,
           isSuggested,
         );
       } else if (activityType == 'journal') {
-        updatedProgress = _logJournal(updatedProgress, activityDay, now);
+        updatedProgress = _logJournal(updatedProgress, activityDay, effectiveLogDate);
       }
 
-      updatedProgress = updatedProgress =
-          _updateMonotonicStreak(updatedProgress, effectiveLogDate);
-      updatedProgress = _updateLevel(
-        updatedProgress,
-      );
+      updatedProgress = _updateMonotonicStreak(updatedProgress, effectiveLogDate);
+      updatedProgress = _updateLevel(updatedProgress);
 
-      ErrorLogger.logInfo(
-          'Logged activity in ${stopwatch.elapsedMilliseconds}ms: ${updatedProgress.totalPoints} points');
-      ErrorLogger.logInfo(
-          'Final progress: Points=${updatedProgress.totalPoints}, '
+      ErrorLogger.logInfo('Logged activity in ${stopwatch.elapsedMilliseconds}ms: ${updatedProgress.totalPoints} points');
+      ErrorLogger.logInfo('Final progress: Points=${updatedProgress.totalPoints}, '
           'Streak=${updatedProgress.streakCount}, '
           'ChallengeProgress=${updatedProgress.challengeProgress}');
-      metricsTracker.record(true);
+          metricsTracker.record(true);
       return updatedProgress;
     } catch (e) {
-      ErrorLogger.logError(
-          'Failed to log activity in ${stopwatch.elapsedMilliseconds}ms: $e');
+      ErrorLogger.logError('Failed to log activity in ${stopwatch.elapsedMilliseconds}ms: $e');
       metricsTracker.record(false);
       rethrow;
     } finally {
@@ -72,29 +65,24 @@ class GamificationController {
   UserProgress _logMood(
     UserProgress progress,
     DateTime activityDay,
-    DateTime now,
+    DateTime effectiveLogDate,
   ) {
-    final alreadyLogged =
-        progress.moodLogDates.any((d) => isSameDay(d, activityDay));
+    final alreadyLogged = progress.moodLogDates.any((d) => isSameDay(d, activityDay));
     ErrorLogger.logInfo('Mood already logged today: $alreadyLogged');
     if (!alreadyLogged) {
       var updatedProgress = progress.copyWith(
         moodLogDates: [...progress.moodLogDates, activityDay],
         lastMoodLogDate: activityDay,
+        totalPoints: progress.totalPoints + 2,
       );
-      if (isSameDay(activityDay, now)) {
-        updatedProgress = updatedProgress.copyWith(
-          totalPoints: updatedProgress.totalPoints + 2,
-        );
-        updatedProgress = _challengeController.updateChallengeProgress(
-          progress: updatedProgress,
-          activityType: 'mood_log',
-          now: now,
-        );
-        ErrorLogger.logInfo(
-            'Mood points added: 2, Total: ${updatedProgress.totalPoints}, '
-            'ChallengeProgress: ${updatedProgress.challengeProgress}');
-      }
+      updatedProgress = _challengeController.updateChallengeProgress(
+        progress: updatedProgress,
+        activityType: 'mood_log',
+        now: effectiveLogDate,
+        completedRelaxation: null,
+      );
+      ErrorLogger.logInfo('Mood points added: 2, Total: ${updatedProgress.totalPoints}, '
+          'ChallengeProgress: ${updatedProgress.challengeProgress}');
       return updatedProgress;
     }
     ErrorLogger.logInfo('Skipping mood challenge update: already logged today');
@@ -104,46 +92,47 @@ class GamificationController {
   UserProgress _logRelaxation(
     UserProgress progress,
     String completedRelaxation,
-    DateTime now,
+    DateTime effectiveLogDate,
     bool isSuggested,
   ) {
-    final alreadyLogged =
-        progress.relaxationLogDates.any((d) => isSameDay(d, now));
-    ErrorLogger.logError('Relaxation already logged today: $alreadyLogged');
+    final activityDay = DateTime(
+      effectiveLogDate.year,
+      effectiveLogDate.month,
+      effectiveLogDate.day,
+    );
+    final alreadyLogged = progress.relaxationLogDates.any((d) => isSameDay(d, activityDay));
+    ErrorLogger.logInfo('Relaxation already logged today: $alreadyLogged');
     if (!alreadyLogged) {
       final pointsToAdd = isSuggested ? 5 : 2;
       var updatedProgress = progress.copyWith(
         totalPoints: progress.totalPoints + pointsToAdd,
         completedRelaxations: {
           ...progress.completedRelaxations,
-          completedRelaxation: now,
+          completedRelaxation: effectiveLogDate,
         },
-        relaxationLogDates: [...progress.relaxationLogDates, now],
-        lastRelaxationLogDate: now,
+        relaxationLogDates: [...progress.relaxationLogDates, effectiveLogDate],
+        lastRelaxationLogDate: effectiveLogDate,
       );
       updatedProgress = _challengeController.updateChallengeProgress(
         progress: updatedProgress,
         activityType: 'relaxation',
-        now: now,
+        now: effectiveLogDate,
         completedRelaxation: completedRelaxation,
       );
-      ErrorLogger.logInfo(
-          'Relaxation points added: $pointsToAdd, Total: ${updatedProgress.totalPoints}, '
+      ErrorLogger.logInfo('Relaxation points added: $pointsToAdd, Total: ${updatedProgress.totalPoints}, '
           'ChallengeProgress: ${updatedProgress.challengeProgress}');
       return updatedProgress;
     }
-    ErrorLogger.logInfo(
-        'Skipping relaxation challenge update: already logged today');
+    ErrorLogger.logInfo('Skipping relaxation challenge update: already logged today');
     return progress;
   }
 
   UserProgress _logJournal(
     UserProgress progress,
     DateTime activityDay,
-    DateTime now,
+    DateTime effectiveLogDate,
   ) {
-    final alreadyLogged =
-        progress.journalLogDates.any((d) => isSameDay(d, activityDay));
+    final alreadyLogged = progress.journalLogDates.any((d) => isSameDay(d, activityDay));
     ErrorLogger.logInfo('Journal already logged today: $alreadyLogged');
     if (!alreadyLogged) {
       var updatedProgress = progress.copyWith(
@@ -153,36 +142,29 @@ class GamificationController {
       updatedProgress = _challengeController.updateChallengeProgress(
         progress: updatedProgress,
         activityType: 'journal',
-        now: now,
+        now: effectiveLogDate,
+        completedRelaxation: null,
       );
-      ErrorLogger.logInfo(
-          'Journal points added: 3, Total: ${updatedProgress.totalPoints}, '
+      ErrorLogger.logInfo('Journal points added: 3, Total: ${updatedProgress.totalPoints}, '
           'ChallengeProgress: ${updatedProgress.challengeProgress}');
       return updatedProgress;
     }
-    ErrorLogger.logInfo(
-        'Skipping journal challenge update: already logged today');
+    ErrorLogger.logInfo('Skipping journal challenge update: already logged today');
     return progress;
   }
 
-  /// Updates streak based on activity date.
   UserProgress _updateMonotonicStreak(
     UserProgress progress,
     DateTime effectiveLogDate,
   ) {
-    final isTodayLogged = progress.lastLogDate != null &&
-        isSameDay(progress.lastLogDate!, effectiveLogDate);
-    ErrorLogger.logInfo(
-        'Is today logged: $isTodayLogged, Last Log: ${progress.lastLogDate}, Effective: $effectiveLogDate');
+    final isTodayLogged = progress.lastLogDate != null && isSameDay(progress.lastLogDate!, effectiveLogDate);
+    ErrorLogger.logInfo('Is today logged: $isTodayLogged, Last Log: ${progress.lastLogDate}, Effective: $effectiveLogDate');
     if (!isTodayLogged) {
       final newStreak = progress.lastLogDate == null
           ? 1
-          : isSameDay(effectiveLogDate,
-                  progress.lastLogDate!.add(Duration(days: 1)))
+          : isSameDay(effectiveLogDate, progress.lastLogDate!.add(Duration(days: 1)))
               ? progress.streakCount + 1
-              : effectiveLogDate.isAfter(progress.lastLogDate!)
-                  ? 1
-                  : progress.streakCount;
+              : effectiveLogDate.isAfter(progress.lastLogDate!) ? 1 : progress.streakCount;
       ErrorLogger.logInfo('Streak updated to: $newStreak');
       return progress.copyWith(
         streakCount: newStreak,
@@ -206,4 +188,5 @@ class GamificationController {
     }
     return progress;
   }
+
 }

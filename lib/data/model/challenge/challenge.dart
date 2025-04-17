@@ -41,9 +41,9 @@ class Challenge {
   });
 
   /// Checks if the challenge is active on the given date.
-  bool isActive(DateTime now) {
-    return now.isAfter(startDate) && now.isBefore(endDate.add(const Duration(days: 1)));
-  }
+ bool isActive(DateTime now) {
+  return now.isAfter(startDate) && now.isBefore(endDate.add(Duration(days: 1)));
+}
 
   /// Creates a copy with updated fields.
   Challenge copyWith({

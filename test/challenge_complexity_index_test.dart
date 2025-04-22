@@ -21,15 +21,19 @@ void main() {
 
   tearDown(() => container.dispose());
 
-  test('Challenge Complexity Index via real challengeProvider', () {
-    // GIVEN: the static level 1 challenges are defined in your app
-    final challenges = container.read(challengesProvider);
 
-    // WHEN: we compute the average goal (i.e. complexity index)
+
+  test('Challenge Complexity Index via real challengeProvider', () async {
+        // GIVEN: the static level 1 challenges are defined in your app
+    final db = container.read(databaseHelperProvider);
+    final challenges = await db.getChallenges(); // Direct access, no filtering
+
+        // WHEN: we compute the average goal (i.e. complexity index)
     final totalGoals = challenges.map((c) => c.goal).reduce((a, b) => a + b);
     final complexityIndex = totalGoals / challenges.length;
+    print(complexityIndex);
 
-    // THEN: it matches the expected average for level 1
+       // THEN: it matches the expected average for level 1
     // level 1 goals are [3,2,3,3], so (3+2+3+3)/4 = 2.75
     expect(complexityIndex, closeTo(2.75, 1e-6));
   });

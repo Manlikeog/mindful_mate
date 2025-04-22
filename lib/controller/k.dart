@@ -1,10 +1,11 @@
-
+import 'package:flutter/material.dart';
 import 'package:mindful_mate/controller/challenge_controller.dart';
 import 'package:mindful_mate/data/model/challenge/challenge.dart';
 import 'package:mindful_mate/data/model/progress_card/user_progress.dart';
 import 'package:mindful_mate/utils/date_utils.dart';
 import 'package:mindful_mate/utils/error_logger.dart';
 import 'package:mindful_mate/utils/metrics_tricker.dart';
+import 'package:mindful_mate/utils/reward_popup.dart';
 
 class GamificationController {
   final ChallengeController _challengeController;
@@ -66,43 +67,38 @@ class GamificationController {
     }
   }
 
- UserProgress _logMood(
-  UserProgress progress,
-  DateTime activityDay,
-  DateTime now,
-) {
-  final alreadyLogged = progress.moodLogDates.any((d) => isSameDay(d, activityDay));
-  ErrorLogger.logInfo('Mood already logged on $activityDay: $alreadyLogged');
-
-  if (!alreadyLogged) {
-    var updatedProgress = progress.copyWith(
-      moodLogDates: [...progress.moodLogDates, activityDay],
-      lastMoodLogDate: activityDay,
-    );
-
-    final isToday = isSameDay(activityDay, DateTime.now()); // ✅ Award only if for today
-    if (isToday) {
-      updatedProgress = updatedProgress.copyWith(
-        totalPoints: updatedProgress.totalPoints + 2,
+  UserProgress _logMood(
+    UserProgress progress,
+    DateTime activityDay,
+    DateTime now,
+  ) {
+    final alreadyLogged =
+        progress.moodLogDates.any((d) => isSameDay(d, activityDay));
+    ErrorLogger.logInfo('Mood already logged today: $alreadyLogged');
+    if (!alreadyLogged) {
+      var updatedProgress = progress.copyWith(
+        moodLogDates: [...progress.moodLogDates, activityDay],
+        lastMoodLogDate: activityDay,
       );
-
-      updatedProgress = _challengeController.updateChallengeProgress(
-        progress: updatedProgress,
-        activityType: 'mood_log',
-        now: now,
-      );
-      ErrorLogger.logInfo('Mood points added: 2');
-    } else {
-      ErrorLogger.logInfo('No points awarded: log not for today');
+      // Award points based on provided 'now'
+      if (isSameDay(activityDay, now)) {
+        updatedProgress = updatedProgress.copyWith(
+          totalPoints: updatedProgress.totalPoints + 2,
+        );
+        updatedProgress = _challengeController.updateChallengeProgress(
+          progress: updatedProgress,
+          activityType: 'mood_log',
+          now: now,
+        );
+        ErrorLogger.logInfo(
+            'Mood points added: 2, Total: ${updatedProgress.totalPoints}, '
+            'ChallengeProgress: ${updatedProgress.challengeProgress}');
+      }
+      return updatedProgress;
     }
-
-    return updatedProgress;
+    ErrorLogger.logInfo('Skipping mood challenge update: already logged today');
+    return progress;
   }
-
-  ErrorLogger.logInfo('Skipping mood challenge update: already logged');
-  return progress;
-}
-
 
   UserProgress _logRelaxation(
     UserProgress progress,

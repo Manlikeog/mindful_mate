@@ -47,6 +47,23 @@ class ProgressScreen extends ConsumerWidget {
             ),
           ),
         ),
+        // ◀️ TEST‑ONLY BUTTON ▶️
+        actions: [
+          if (const bool.fromEnvironment('INTEGRATION_TEST')) ...[
+            IconButton(
+              key: const Key('goToChallengesButton'),
+              icon: const Icon(Icons.navigate_next), // any visible icon
+              tooltip: 'Go to Challenges',
+              onPressed: () => context.go('/challenges'),
+            ),
+            IconButton(
+              key: const Key('goToMoodButton'),
+              icon: const Icon(Icons.navigate_next), // any visible icon
+              tooltip: 'Go to Mood',
+              onPressed: () => context.go('/moodTracker'),
+            ),
+          ]
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(

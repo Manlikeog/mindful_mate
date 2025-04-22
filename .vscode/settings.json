@@ -1,0 +1,8 @@
+{
+    "testing.alwaysRevealTestOnStateChange": true,
+    "testing.automaticallyOpenPeekView": "failureAnywhere",
+    "testing.automaticallyOpenPeekViewDuringAutoRun": true,
+    "testing.coverageToolbarEnabled": true,
+    "testing.followRunningTest": true,
+    "testing.showAllMessages": true
+}

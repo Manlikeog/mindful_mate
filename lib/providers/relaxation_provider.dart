@@ -3,13 +3,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mindful_mate/controller/relaxation_controller.dart';
 import 'package:mindful_mate/data/model/relaxation/relaxation.dart';
 import 'package:mindful_mate/data/model/relaxation/relaxation_card.dart';
-import 'package:mindful_mate/providers/gamification_provider.dart';
 import 'package:mindful_mate/providers/progress_provider.dart';
 
 /// Provides access to the relaxation controller.
 final relaxationControllerProvider = Provider((ref) {
-  final gamificationController = ref.watch(gamificationControllerProvider);
-  return RelaxationController(gamificationController, ref);
+
+  return RelaxationController( ref);
 });
 
 /// Manages expansion state for relaxation cards.

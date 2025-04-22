@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:mindful_mate/controller/gamification_controller.dart';
 import 'package:mindful_mate/data/model/progress_card/user_progress.dart';
 import 'package:mindful_mate/data/model/relaxation/relaxation.dart';
 import 'package:mindful_mate/providers/gamification_provider.dart';
-import 'package:mindful_mate/providers/progress_provider.dart';
 import 'package:mindful_mate/utils/date_utils.dart';
 import 'package:mindful_mate/utils/error_logger.dart';
 
 /// Manages relaxation exercise operations and completions.
 class RelaxationController {
-  final GamificationController _gamificationController;
   final Ref providerRef;
-  RelaxationController(this._gamificationController, this.providerRef);
+  RelaxationController( this.providerRef);
 
   /// Checks if a relaxation exercise was completed today.
   bool isCompletedToday(UserProgress progress, String exerciseId) {

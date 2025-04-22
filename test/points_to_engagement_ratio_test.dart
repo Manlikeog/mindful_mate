@@ -11,15 +11,17 @@ void main() {
 
       var progress = UserProgress();
 
-      final now = DateTime(2025, 4, 17, 8, 0);
+      // Use current week dates instead of future dates
+      final now = DateTime.now();
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
 
       final activitySequence = [
         {'type': 'mood_log'},
         {'type': 'mood_log'},
         {'type': 'journal'},
-        {'type': 'relaxation', 'completed': 'relax_l1', 'suggested': true},
-        {'type': 'relaxation', 'completed': 'relax_l1', 'suggested': true},
-        {'type': 'relaxation', 'completed': 'relax_l1', 'suggested': true},
+        {'type': 'relaxation', 'completed': 'stretch_l1', 'suggested': true}, // Valid relaxation ID
+        {'type': 'relaxation', 'completed': 'body_scan_l1', 'suggested': true}, // Valid relaxation ID
+        {'type': 'relaxation', 'completed': 'breath_l1', 'suggested': true}, // Valid relaxation ID
       ];
 
       int effectiveEngagements = 0;
@@ -27,8 +29,9 @@ void main() {
 
       for (int i = 0; i < activitySequence.length; i++) {
         final entry = activitySequence[i];
-        final fakeDate = now.add(Duration(days: i));
-
+        // Set dates within the current week
+        final fakeDate = startOfWeek.add(Duration(days: i % 7));
+        print(fakeDate);
         final beforeProgress = progress;
 
         progress = controller.logActivity(
